@@ -11,7 +11,7 @@ cd bin
 sudo ln -s /usr/bin/clpru clpru
 sudo ln -s /usr/bin/lnkpru lnkpru
 
-cd /home/debian/OpenVLC-PA/OpenVLC_VL_IR//PRU/RX
+cd /home/debian/OpenVLC-PA/OpenVLC_VL_IR/PRU/RX
 
 sudo chmod +x deploy.sh
 sudo ./deploy.sh

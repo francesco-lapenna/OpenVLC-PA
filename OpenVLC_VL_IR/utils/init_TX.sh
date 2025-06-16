@@ -4,7 +4,7 @@ cd /home/debian/OpenVLC-PA/OpenVLC_VL_IR/Driver
 
 sudo chmod +x load_test.sh
 sudo ./load_test.sh
-ifconfig vlc0 192.168.0.1
+sudo ifconfig vlc0 192.168.0.1
 
 cd /usr/share/ti/cgt-pru
 sudo mkdir bin
