@@ -408,8 +408,15 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     int i;
     //unsigned short crc;
 
-    for (i=0; i<PREAMBLE_LEN; i++)
-        buffer[i] = 0xaa; // Preamble
+	//
+	char* otp = "1001"
+
+    for (i=0; i<PREAMBLE_LEN; i++) {
+		if (otp[i] == "1")
+			buffer[i] = 0xab; // 10101011
+		else  // bit 0 or error
+			buffer[i] = 0xaa; // Standard Preamble Sequence 10101010
+	}
     // SFD
 	buffer[1]= 0xae; // Added to synchronize correctly with the frame
     buffer[PREAMBLE_LEN] = 0xa3; //10100011 0110011010100101
@@ -745,6 +752,15 @@ static int phy_decoding(void *data)
 			//printk("Payload %d\n", thelen1);
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
+			
+			// --- Extract secret bits from preamble ---
+			uint8_t received_secret = 0;
+			for (int k = 0; k < 4; k++) {
+				uint8_t preamble_byte = rx_data[2 + k];
+				uint8_t bit = preamble_byte & 0x01; // last bit
+				received_secret |= (bit << (3 - k)); // MSB first
+			}
+			printk("Received secret bits: 0x%x\n", received_secret);
 			
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
