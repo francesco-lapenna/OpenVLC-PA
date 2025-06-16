@@ -1,6 +1,5 @@
 Fork di OpenVLC
 
-Prova 01: TX inserisce alcuni bit nel preambolo e RX prova a riceverli
 
 # OpenVLC 
 
