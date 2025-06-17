@@ -414,7 +414,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 	for (i = 0; i < PREAMBLE_LEN; i++) {
 		if (i == 1) {
 			buffer[i] = 0xae; // SFD, do not touch!
-		} else if (i % 32 == 1 && otp_idx < (int)strlen(otp)) {
+		} else if (i % 32 == 0 && otp_idx < (int)strlen(otp)) {
 			// Insert one bit of otp at every odd index except SFD
 			if (otp[otp_idx] == '1') {
 				buffer[i] = 0xab;
