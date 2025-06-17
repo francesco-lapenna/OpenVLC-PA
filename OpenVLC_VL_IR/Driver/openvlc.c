@@ -408,14 +408,14 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     int i;
     //unsigned short crc;
 
-	const char otp[] = "1001";  //
+	const char otp[] = "1001";  // 4 bits
 
 	int otp_idx = 0;
 	for (i = 0; i < PREAMBLE_LEN; i++) {
 		if (i == 1) {
 			buffer[i] = 0xae; // SFD, do not touch!
-		} else if (i % 32 == 0 && otp_idx < (int)strlen(otp)) {
-			// Insert one bit of otp at every odd index except SFD
+		} else if ((i % 64 == 0) && otp_idx < (int)strlen(otp)) {
+			// Insert one bit of otp at every 64th position (excluding SFD)
 			if (otp[otp_idx] == '1') {
 				buffer[i] = 0xab;
 			} else {
@@ -768,8 +768,8 @@ static int phy_decoding(void *data)
 			int otp_bits = 4;
 			int k;
 			for (k = 0; k < otp_bits; k++) {
-				int preamble_idx = 32 * k; // positions 0, 32, 64, 96, ...
-				if (preamble_idx == 1) preamble_idx++; // skip SFD if it lands here (shouldn't for 32-mult)
+				int preamble_idx = 64 * k; // positions 0, 64, 128, 192
+				if (preamble_idx == 1) preamble_idx++; // skip SFD if it lands here (shouldn't for 64-mult)
 				uint8_t preamble_byte = (uint8_t)(rx_data[2 + preamble_idx] & 0xFF);
 				uint8_t bit = preamble_byte & 0x01;
 				received_secret |= (bit << (otp_bits - 1 - k)); // MSB first

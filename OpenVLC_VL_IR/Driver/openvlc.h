@@ -71,7 +71,7 @@
  * BYTE  | 4        | 1   | 2      | 2   | 2   | 2        | 0...255 | 2   |
  * ----------------------------------------------------------------
  */
-#define PREAMBLE_LEN 256  //4
+#define PREAMBLE_LEN 300  //4
 #define SFD_LEN 1
 #define OCTET_LEN 2
 #define MAC_ADDR_LEN 2
