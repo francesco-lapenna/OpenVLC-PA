@@ -410,13 +410,20 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 
 	const char otp[] = "1001";  //
 
-    for (i = 0; i < PREAMBLE_LEN; i++) {
-		if (i < (int)strlen(otp) && otp[i] == '1') {
-			buffer[i] = 0xab; // 10101011
+	int otp_idx = 0;
+	for (i = 0; i < PREAMBLE_LEN; i++) {
+		if (i % 2 == 1 && otp_idx < (int)strlen(otp)) {
+			// Insert one bit of otp at every odd index (1, 3, 5...)
+			if (otp[otp_idx] == '1') {
+				buffer[i] = 0xab; // 10101011
+			} else {
+				buffer[i] = 0xaa; // 10101010
+			}
+			otp_idx++;
 		} else {
-			// either otp[i] is '0' or i >= strlen(otp): default to 0xaa
-			buffer[i] = 0xaa; // Standard Preamble Sequence 10101010
-    	}
+			// Even indices or after otp is exhausted: standard preamble
+			buffer[i] = 0xaa;
+		}
 	}
 
     // SFD
@@ -755,14 +762,16 @@ static int phy_decoding(void *data)
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 
-			// --- Extract secret bits from preamble ---Add commentMore actions
+			// --- Extract secret bits from preamble ---
 			uint8_t received_secret = 0;
+			int otp_bits = 4; // Number of bits you sent
 			int k;
-			for (k = 0; k < 4; k++) {
-				// Take LSB of the 32-bit word at rx_data[2 + k]
-				uint8_t preamble_byte = (uint8_t)(rx_data[2 + k] & 0xFF);
+			for (k = 0; k < otp_bits; k++) {
+				// Odd indices in preamble: 1, 3, 5, ...
+				int preamble_idx = 2 + (k * 2) + 1; // +2 offset for rx_data, then odd indices
+				uint8_t preamble_byte = (uint8_t)(rx_data[preamble_idx] & 0xFF);
 				uint8_t bit = preamble_byte & 0x01;
-				received_secret |= (bit << (3 - k)); // MSB-first
+				received_secret |= (bit << (otp_bits - 1 - k)); // MSB-first
 			}
 			printk("Received secret bits: 0x%x\n", (unsigned int)received_secret);
 			
