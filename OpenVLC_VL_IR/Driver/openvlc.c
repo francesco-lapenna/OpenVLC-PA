@@ -412,16 +412,17 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 
 	int otp_idx = 0;
 	for (i = 0; i < PREAMBLE_LEN; i++) {
-		if (i % 2 == 1 && otp_idx < (int)strlen(otp)) {
-			// Insert one bit of otp at every odd index (1, 3, 5...)
+		if (i == 1) {
+			buffer[i] = 0xae; // SFD, do not touch!
+		} else if (i % 2 == 1 && otp_idx < (int)strlen(otp)) {
+			// Insert one bit of otp at every odd index except SFD
 			if (otp[otp_idx] == '1') {
-				buffer[i] = 0xab; // 10101011
+				buffer[i] = 0xab;
 			} else {
-				buffer[i] = 0xaa; // 10101010
+				buffer[i] = 0xaa;
 			}
 			otp_idx++;
 		} else {
-			// Even indices or after otp is exhausted: standard preamble
 			buffer[i] = 0xaa;
 		}
 	}
@@ -764,14 +765,16 @@ static int phy_decoding(void *data)
 
 			// --- Extract secret bits from preamble ---
 			uint8_t received_secret = 0;
-			int otp_bits = 4; // Number of bits you sent
-			int k;
-			for (k = 0; k < otp_bits; k++) {
-				// Odd indices in preamble: 1, 3, 5, ...
-				int preamble_idx = 2 + (k * 2) + 1; // +2 offset for rx_data, then odd indices
-				uint8_t preamble_byte = (uint8_t)(rx_data[preamble_idx] & 0xFF);
-				uint8_t bit = preamble_byte & 0x01;
-				received_secret |= (bit << (otp_bits - 1 - k)); // MSB-first
+			int otp_bits = 4;
+			int k, found = 0;
+			for (i = 0; i < PREAMBLE_LEN && found < otp_bits; i++) {
+				if (i == 1) continue; // skip SFD
+				if (i % 2 == 1) {
+					uint8_t preamble_byte = (uint8_t)(rx_data[2 + i] & 0xFF);
+					uint8_t bit = preamble_byte & 0x01;
+					received_secret |= (bit << (otp_bits - 1 - found));
+					found++;
+				}
 			}
 			printk("Received secret bits: 0x%x\n", (unsigned int)received_secret);
 			
