@@ -408,13 +408,15 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     int i;
     //unsigned short crc;
 
-	char* otp = "1001"  //
+	const char otp[] = "1001";  //
 
-    for (i=0; i<PREAMBLE_LEN; i++) {
-		if (otp[i] == "1")
+    for (i = 0; i < PREAMBLE_LEN; i++) {
+		if (i < (int)strlen(otp) && otp[i] == '1') {
 			buffer[i] = 0xab; // 10101011
-		else  // bit 0 or error
+		} else {
+			// either otp[i] is '0' or i >= strlen(otp): default to 0xaa
 			buffer[i] = 0xaa; // Standard Preamble Sequence 10101010
+    	}
 	}
 
     // SFD
@@ -755,12 +757,14 @@ static int phy_decoding(void *data)
 
 			// --- Extract secret bits from preamble ---Add commentMore actions
 			uint8_t received_secret = 0;
-			for (int k = 0; k < 4; k++) {
-				uint8_t preamble_byte = rx_data[2 + k];
-				uint8_t bit = preamble_byte & 0x01; // last bit
-				received_secret |= (bit << (3 - k)); // MSB first
+			int k;
+			for (k = 0; k < 4; k++) {
+				// Take LSB of the 32-bit word at rx_data[2 + k]
+				uint8_t preamble_byte = (uint8_t)(rx_data[2 + k] & 0xFF);
+				uint8_t bit = preamble_byte & 0x01;
+				received_secret |= (bit << (3 - k)); // MSB-first
 			}
-			printk("Received secret bits: 0x%x\n", received_secret);
+			printk("Received secret bits: 0x%x\n", (unsigned int)received_secret);
 			
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
