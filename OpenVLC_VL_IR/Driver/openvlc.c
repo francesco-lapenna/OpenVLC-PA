@@ -498,8 +498,16 @@ static int write_to_pru(_Bool *symbols_to_send, int symbol_length)
 static void generate_DATA_frame(struct vlc_packet *pkt)
 {
     //printk("VLC: Generating DATA frame\n");
+	const unsigned char otp_seq[4] = {0xDE, 0xAD, 0xBE, 0xEF}; // OTP sequence
 	int i, payload_len, index_block, encoded_len, num_of_blocks = 0, symbol_last_index = 0, group_32bit = 0;
     payload_len = pkt->datalen-(MAC_HDR_LEN-OCTET_LEN);
+
+	// Ensure we have enough payload to insert the sequence
+    if (payload_len < 4) {
+        printk("Payload too small to insert fixed sequence\n");
+        return;
+    }
+
     encoded_len = payload_len+2*MAC_ADDR_LEN+PROTOCOL_LEN;
     // Calculate the number of blocks
     if (encoded_len % block_size)
@@ -515,8 +523,12 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
         printk ("Ran out of memory generating new frames.\n");
         return;
     }
+
+	// Insert the fixed sequence at the start of the payload
+    memcpy(data_buffer_byte+PREAMBLE_LEN+SFD_LEN+OCTET_LEN, otp_seq, 4);
     // Construct a new data frame
-    memcpy(data_buffer_byte+PREAMBLE_LEN+SFD_LEN+OCTET_LEN, pkt->data, pkt->datalen); // Copy the payload
+	// Copy the rest of the payload, shifted by 4 bytes, and truncated by 4 bytes
+    memcpy(data_buffer_byte+PREAMBLE_LEN+SFD_LEN+OCTET_LEN+4, pkt->data+4, payload_len-4);
     vlc_release_buffer(pkt); // Return the buffer to the pool
     construct_frame_header(data_buffer_byte, data_buffer_byte_len, data_buffer_symbol_len);//construct_frame_header(data_buffer_byte, data_buffer_byte_len, payload_len);
     
@@ -678,6 +690,15 @@ static void get_the_data_rx(char * rx_data)
             rx_pkt->datalen = MAC_HDR_LEN-OCTET_LEN+payload_len_rx;
             // Copy the received data (omit the datalen octet)
             memcpy(rx_pkt->data, rx_data+OCTET_LEN, rx_pkt->datalen);
+
+			// Extract and print the 4-byte OTP sequence
+            if (payload_len_rx >= 4) {
+                unsigned char otp_seq_rx[4];
+                memcpy(otp_seq_rx, rx_pkt->data, 4);
+                printk("Received fixed sequence: %02X %02X %02X %02X\n",
+                    otp_seq_rx[0], otp_seq_rx[1], otp_seq_rx[2], otp_seq_rx[3]);
+            }
+
 			if (cmp_packets(rx_pkt->data,rx_pkt_check_dup->data,rx_pkt->datalen)) {
                 // Frist copy the packet; the rx_pkt will be released in max_rx
                 memcpy(rx_pkt_check_dup->data, rx_pkt->data, rx_pkt->datalen);
