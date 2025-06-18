@@ -501,6 +501,8 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
 	const unsigned char otp_seq[4] = {0xDE, 0xAD, 0xBE, 0xEF}; // OTP sequence
 	int i, payload_len, index_block, encoded_len, num_of_blocks = 0, symbol_last_index = 0, group_32bit = 0;
     payload_len = pkt->datalen-(MAC_HDR_LEN-OCTET_LEN);
+	int payload_offset = PREAMBLE_LEN + SFD_LEN + MAC_HDR_LEN;
+
 
 	// Ensure we have enough payload to insert the sequence
     if (payload_len < 4) {
@@ -525,10 +527,10 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
     }
 
 	// Insert the fixed sequence at the start of the payload
-    memcpy(data_buffer_byte+PREAMBLE_LEN+SFD_LEN+OCTET_LEN, otp_seq, 4);
+    memcpy(data_buffer_byte + payload_offset, otp_seq, 4);
     // Construct a new data frame
 	// Copy the rest of the payload, shifted by 4 bytes, and truncated by 4 bytes
-    memcpy(data_buffer_byte+PREAMBLE_LEN+SFD_LEN+OCTET_LEN+4, pkt->data+4, payload_len-4);
+    memcpy(data_buffer_byte + payload_offset + 4, pkt->data + 4, payload_len - 4);
     vlc_release_buffer(pkt); // Return the buffer to the pool
     construct_frame_header(data_buffer_byte, data_buffer_byte_len, data_buffer_symbol_len);//construct_frame_header(data_buffer_byte, data_buffer_byte_len, payload_len);
     
