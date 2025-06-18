@@ -695,11 +695,11 @@ static void get_the_data_rx(char * rx_data)
 
 			// Extract and print the 4-byte OTP sequence
             if (payload_len_rx >= 4) {
-                unsigned char otp_seq_rx[4];
-                memcpy(otp_seq_rx, rx_pkt->data, 4);
-                printk("Received fixed sequence: %02X %02X %02X %02X\n",
-                    otp_seq_rx[0], otp_seq_rx[1], otp_seq_rx[2], otp_seq_rx[3]);
-            }
+				unsigned char otp_seq_rx[4];
+				memcpy(otp_seq_rx, rx_pkt->data + MAC_HDR_LEN, 4);
+				printk("Received fixed sequence: %02X %02X %02X %02X\n",
+					otp_seq_rx[0], otp_seq_rx[1], otp_seq_rx[2], otp_seq_rx[3]);
+			}
 
 			if (cmp_packets(rx_pkt->data,rx_pkt_check_dup->data,rx_pkt->datalen)) {
                 // Frist copy the packet; the rx_pkt will be released in max_rx
