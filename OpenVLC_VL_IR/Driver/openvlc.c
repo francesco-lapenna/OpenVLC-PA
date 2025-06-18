@@ -501,7 +501,7 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
 	const unsigned char otp_seq[4] = {0xDE, 0xAD, 0xBE, 0xEF}; // OTP sequence
 	int i, payload_len, index_block, encoded_len, num_of_blocks = 0, symbol_last_index = 0, group_32bit = 0;
     payload_len = pkt->datalen-(MAC_HDR_LEN-OCTET_LEN);
-	int payload_offset = PREAMBLE_LEN + SFD_LEN + MAC_HDR_LEN;
+	int payload_offset = PREAMBLE_LEN + SFD_LEN + OCTET_LEN;
 
 
 	// Ensure we have enough payload to insert the sequence
