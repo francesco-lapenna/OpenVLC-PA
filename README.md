@@ -1,5 +1,6 @@
 Fork di OpenVLC  
 Branch PHY-Authentication -> prova_03
+prova inserimento OTP nei primi byte di payload
 
 # OpenVLC 
 
