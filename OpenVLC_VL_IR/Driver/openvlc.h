@@ -70,6 +70,8 @@
  * FIELD | Preamble | SFD | Length | Dst | Src | Protocol | Payload | CRC |
  * BYTE  | 4        | 1   | 2      | 2   | 2   | 2        | 0...255 | 2   |
  * ----------------------------------------------------------------
+ *                        |--- MAC_HDR_LEN ---------------|
+ *                                 |--- VLC_HLEN ---------|
  */
 #define PREAMBLE_LEN 4
 #define SFD_LEN 1
