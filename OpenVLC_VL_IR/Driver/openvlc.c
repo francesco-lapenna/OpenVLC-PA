@@ -709,7 +709,15 @@ static int phy_decoding(void *data)
 	for (; ;) {
 		
 		if(rx_pru[0] != 0){
-			
+			// TEMP
+			// Add debug print for the first few bytes
+            printk(KERN_DEBUG "VLC: First bytes of received data: ");
+            for(i = 2; i < 7; i++) {
+                printk(KERN_CONT "0x%02x ", rx_data[i]);
+            }
+            printk(KERN_CONT "\n");
+
+
 			// Extract the secret byte from the last preamble byte
         	unsigned char received_secret = rx_data[PREAMBLE_LEN-1] ^ 0xaa;
 			// Optional: verify the secret byte
