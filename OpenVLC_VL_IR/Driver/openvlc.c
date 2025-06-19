@@ -712,7 +712,7 @@ static int phy_decoding(void *data)
 			// TEMP
 			// Add debug print for the first few bytes
             printk(KERN_DEBUG "VLC: First bytes of received data: ");
-            for(i = 2; i < 7; i++) {
+            for(i = 0; i < 8; i++) {
                 printk(KERN_CONT "0x%02x ", rx_data[i]);
             }
             printk(KERN_CONT "\n");
