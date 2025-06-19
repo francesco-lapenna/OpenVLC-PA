@@ -763,6 +763,12 @@ static int phy_decoding(void *data)
 				}
 			}*/
 			//printk("\n\n");
+			// Print preamble bytes in hex
+			printk("Received preamble: ");
+			for (i = 2; i < 2 + PREAMBLE_LEN; i++) {
+				printk("%02x ", (unsigned char)rx_data[i]);
+			}
+			printk("\n");
 			
 			rx_pru[0] = 0;
 			get_the_data_rx(rx_data);
