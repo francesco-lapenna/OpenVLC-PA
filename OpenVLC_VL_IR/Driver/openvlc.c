@@ -747,7 +747,7 @@ static int phy_decoding(void *data)
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 			
 			//Show data before decoding
-			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
+			for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
 			{
 				mask = 0x00000080;
 				last = rx_data[i];
@@ -761,14 +761,8 @@ static int phy_decoding(void *data)
 					}
 					mask = mask >> 1;
 				}
-			}*/
-			//printk("\n\n");
-			// Print preamble bytes in hex
-			printk("First 16 bytes of rx_data:\n");
-			for (i = 0; i < 16; i++) {
-				printk("%02x ", (unsigned char)rx_data[i]);
 			}
-			printk("\n");
+			printk("\n\n");
 			
 			rx_pru[0] = 0;
 			get_the_data_rx(rx_data);
