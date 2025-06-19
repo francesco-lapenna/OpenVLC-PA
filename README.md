@@ -1,5 +1,7 @@
 Fork di OpenVLC  
-Branch: PHY-Authentication
+Branch: PHY-Authentication -> prova_04
+embedding di un byte di OTP con xor nel preambolo
+obbiettivo riceverlo con l'RX senza rompere la sincronizzazione
 
 # OpenVLC 
 
