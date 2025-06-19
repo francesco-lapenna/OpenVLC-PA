@@ -81,7 +81,7 @@
 	#define KERNEL_V4_14_71 0
 #endif
 
-
+#define SECRET_BYTE 0x42
 #define MAC 0
 #define APP 1
 
@@ -410,6 +410,10 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 
     for (i=0; i<PREAMBLE_LEN; i++)
         buffer[i] = 0xaa; // Preamble
+	
+	// Embed secret byte in last preamble byte using XOR
+    buffer[PREAMBLE_LEN-1] = 0xaa ^ SECRET_BYTE;
+
     // SFD
 	buffer[1]= 0xae; // Added to synchronize correctly with the frame
     buffer[PREAMBLE_LEN] = 0xa3; //10100011 0110011010100101
@@ -706,7 +710,17 @@ static int phy_decoding(void *data)
 		
 		if(rx_pru[0] != 0){
 			
-			
+			// Extract the secret byte from the last preamble byte
+        	unsigned char received_secret = rx_data[PREAMBLE_LEN-1] ^ 0xaa;
+			// Optional: verify the secret byte
+			if(received_secret == SECRET_BYTE) {
+				printk(KERN_DEBUG "VLC: Valid secret byte received: 0x%02x\n", received_secret);
+			} else {
+				printk(KERN_DEBUG "VLC: NON Valid secret byte received: 0x%02x\n", received_secret);
+			}
+			// Restore the original preamble byte for normal processing
+        	rx_data[PREAMBLE_LEN-1] = 0xaa;
+        
 			symbol_len = rx_pru[1];
 			//printk("Symbols received : %d\n",rx_pru[1]);
 
