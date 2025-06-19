@@ -710,12 +710,19 @@ static int phy_decoding(void *data)
 		
 		if(rx_pru[0] != 0){
 			// TEMP
-			// Add debug print for the first few bytes
-            printk(KERN_DEBUG "VLC: First bytes of received data: ");
-            for(i = 0; i < 8; i++) {
-                printk(KERN_CONT "0x%02x ", rx_data[i]);
-            }
-            printk(KERN_CONT "\n");
+			// Print raw PRU data first
+			printk(KERN_DEBUG "VLC: Raw PRU data (first 8 values): ");
+			for(i = 0; i < 8; i++) {
+				printk(KERN_CONT "%08x ", rx_pru[i+2]); // +2 to skip header
+			}
+			printk(KERN_CONT "\n");
+
+			// Print rx_data for comparison
+			printk(KERN_DEBUG "VLC: rx_data content (first 8 bytes): ");
+			for(i = 0; i < 8; i++) {
+				printk(KERN_CONT "%02x ", rx_data[i]);
+			}
+			printk(KERN_CONT "\n");
 
 
 			// Extract the secret byte from the last preamble byte
