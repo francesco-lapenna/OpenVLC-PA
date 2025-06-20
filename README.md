@@ -111,6 +111,10 @@ sudo apt-get update
 ```
 * Then the board is ready to install the headers with: _sudo apt-get install linux-headers-$(uname -r)_
 The code is in github at https://github.com/openvlc/OpenVLC. In Latest_Version subdirectory you will find the Driver (kernel) and PRU code folders. Just fetch them by using _sudo git clone https://<span></span>github.com/openvlc/OpenVLC_, and copy them into the path ”/home/Debian”.
+```bash
+sudo apt-get install linux-headers-$(uname -r)
+git clone https://github.com/openvlc/OpenVLC
+```
 
 #### Connecting the cape
 
