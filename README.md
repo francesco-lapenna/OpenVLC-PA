@@ -113,7 +113,8 @@ sudo apt-get update
 The code is in github at https://github.com/openvlc/OpenVLC. In Latest_Version subdirectory you will find the Driver (kernel) and PRU code folders. Just fetch them by using _sudo git clone https://<span></span>github.com/openvlc/OpenVLC_, and copy them into the path ”/home/Debian”.
 ```bash
 sudo apt-get install linux-headers-$(uname -r)
-git clone https://github.com/openvlc/OpenVLC
+# git clone https://github.com/openvlc/OpenVLC
+git clone https://github.com/francesco-lapenna/OpenVLC-PA
 ```
 
 #### Connecting the cape
