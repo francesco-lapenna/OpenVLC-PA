@@ -68,7 +68,14 @@ Now that we have the SD Card ready with the image, we need to flash the BBB. Fol
 
 * With the power disconnected, insert the SD Card into the BBB and power it up with the USB cable.
 * Connect through SSH to the IP 192.168.7.2.
+```bash
+ssh debian@192.168.7.2
+```
 * In order to run the OS on the SD Card, flash it into the BBB: go to _/opt/scripts/tools/eMMC_ and run _sudo ./bbb-eMMC-flasher-eewiki-ext4.sh_ 
+```bash
+cd /opt/scripts/tools/eMMC
+sudo ./bbb-eMMC-flasher-eewiki-ext4.sh
+```
 * Wait until the script of previous steps reports the following message: “eMMC has been flashed”. Once it finishes, disconnect the usb cable and with the BBB switched off, remove the SD Card.
 
 #### Setting up the OS
@@ -76,8 +83,32 @@ Now that we have the SD Card ready with the image, we need to flash the BBB. Fol
 The firsts steps are to prepare the beaglebone. This must be done in the OpenVLC board operating as TX as well as in the OpenVLC board operating as RX. These are the steps:
 
 * Disable the HDMI: The HDMI uses some PRU pins that we need. To disable the HDMI cape edit the uEnv.txt file: _sudo nano /boot/uEnv.txt_ and uncomment the line: _dtb=am335x-boneblack-emmc-overlay.dtb_
+```bash
+echo "dtb=am335x-boneblack-emmc-overlay.dtb" | sudo tee -a /boot/uEnv.txt
+```
 * Reboot the OpenVLC board. The HDMI is disable after rebooting.
 * Install the headers: Connect the beaglebone to the Internet, and then update with: _sudo apt-get update_
+```bash
+# connect to the internet TODO: remove
+echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+sudo dhclient -v usb0
+
+# backuo and update repositories
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
+sudo tee /etc/apt/sources.list > /dev/null << 'EOF'
+deb http://archive.debian.org/debian jessie main contrib non-free
+deb http://archive.debian.org/debian-security jessie/updates main contrib non-free
+EOF
+
+#install kernel
+cd
+wget https://repos.rcn-ee.com/debian/pool/main/l/linux-upstream/linux-headers-4.4.54-ti-r93_1jessie_armhf.deb
+sudo dpkg -i linux-headers-4.4.54-ti-r93_1jessie_armhf.deb
+sudo rm linux-headers-4.4.54-ti-r93_1jessie_armhf.deb
+
+#update
+sudo apt-get update
+```
 * Then the board is ready to install the headers with: _sudo apt-get install linux-headers-$(uname -r)_
 The code is in github at https://github.com/openvlc/OpenVLC. In Latest_Version subdirectory you will find the Driver (kernel) and PRU code folders. Just fetch them by using _sudo git clone https://<span></span>github.com/openvlc/OpenVLC_, and copy them into the path ”/home/Debian”.
 
