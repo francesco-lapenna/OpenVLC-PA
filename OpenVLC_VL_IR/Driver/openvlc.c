@@ -770,6 +770,7 @@ static int phy_decoding(void *data)
 					}
 					mask = mask >> 1;
 				}
+				printk(" "); // Optional: space every byte
 			}
 			printk("\n\n");
 			
