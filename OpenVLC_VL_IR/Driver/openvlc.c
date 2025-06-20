@@ -564,6 +564,7 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
 	printk("TX Encoded Preamble (bits):\n");
 	for (i = 0; i < PREAMBLE_LEN * 8; i++) {
 		printk("%d", data_buffer_symbol[i] ? 1 : 0);
+        if ((i+1) % 8 == 0) printk(" "); // Optional: space every 8 bits
 	}
 	printk("\n");
 
