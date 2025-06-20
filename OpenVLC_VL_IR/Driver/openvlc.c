@@ -756,7 +756,7 @@ static int phy_decoding(void *data)
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 			
 			//Show data before decoding
-			for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
+			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
 			{
 				mask = 0x00000080;
 				last = rx_data[i];
@@ -770,9 +770,20 @@ static int phy_decoding(void *data)
 					}
 					mask = mask >> 1;
 				}
+			}
+			printk("\n\n");*/
+
+			printk("RX Received PHY frame (bits):\n");
+			for (i = 2; i < 2 + group_32bit * sizeof(unsigned int); i++) {
+				unsigned char mask = 0x80;
+				unsigned char byte = rx_data[i];
+				while (mask) {
+					printk("%d", (byte & mask) ? 1 : 0);
+					mask >>= 1;
+				}
 				printk(" "); // Optional: space every byte
 			}
-			printk("\n\n");
+			printk("\n");
 			
 			rx_pru[0] = 0;
 			get_the_data_rx(rx_data);
