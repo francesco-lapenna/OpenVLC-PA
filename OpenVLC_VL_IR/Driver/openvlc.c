@@ -560,13 +560,13 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
     tx_data_curr_index = data_buffer_symbol_len;
 	//printk("VLC-> Data current index: %d\n",data_buffer_symbol_len);
 
-    // Print only the preamble bits
-	printk("TX Encoded Preamble (bits):\n");
+    // Print only the preamble bits. Fin qui ci siamo, stampa il preambolo corretto
+	/*printk("TX Encoded Preamble (bits):\n");
 	for (i = 0; i < PREAMBLE_LEN * 8; i++) {
 		printk("%d", data_buffer_symbol[i] ? 1 : 0);
         if ((i+1) % 8 == 0) printk(" "); // Optional: space every 8 bits
 	}
-	printk("\n");
+	printk("\n");*/
 
 	group_32bit = write_to_pru(data_buffer_symbol, tx_data_curr_index);
 }
@@ -756,7 +756,7 @@ static int phy_decoding(void *data)
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 			
 			//Show data before decoding
-			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
+			for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
 			{
 				mask = 0x00000080;
 				last = rx_data[i];
@@ -770,8 +770,8 @@ static int phy_decoding(void *data)
 					}
 					mask = mask >> 1;
 				}
-			}*/
-			//printk("\n\n");
+			}
+			printk("\n\n");
 			
 			rx_pru[0] = 0;
 			get_the_data_rx(rx_data);
