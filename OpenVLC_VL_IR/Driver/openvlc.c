@@ -559,6 +559,14 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
     OOK_with_Manchester_RLL(data_buffer_byte, data_buffer_symbol, data_buffer_byte_len);
     tx_data_curr_index = data_buffer_symbol_len;
 	//printk("VLC-> Data current index: %d\n",data_buffer_symbol_len);
+
+    // Print only the preamble bits
+	printk("TX Encoded Preamble (bits):\n");
+	for (i = 0; i < PREAMBLE_LEN * 8; i++) {
+		printk("%d", data_buffer_symbol[i] ? 1 : 0);
+	}
+	printk("\n");
+
 	group_32bit = write_to_pru(data_buffer_symbol, tx_data_curr_index);
 }
 
