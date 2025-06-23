@@ -406,12 +406,14 @@ __be16 vlc_type_trans(struct sk_buff *skb, struct net_device *dev)
 static void construct_frame_header(char* buffer, int buffer_len, int payload_len)
 {
     int i;
+	unsigned char secret = 0x3f;  // byte segreto
     //unsigned short crc;
 
     for (i=0; i<PREAMBLE_LEN; i++)
         buffer[i] = 0xaa; // Preamble
     // SFD
 	buffer[1]= 0xae; // Added to synchronize correctly with the frame
+	buffer[PREAMBLE_LEN-1] = 0xaa ^ secret;  // ultimo byte del preambolo XOR con segreto
     buffer[PREAMBLE_LEN] = 0xa3; //10100011 0110011010100101
     // Length of payload
     buffer[PREAMBLE_LEN+1] = (unsigned char) ((payload_len>>8) & 0xff);
@@ -745,6 +747,10 @@ static int phy_decoding(void *data)
 			//printk("Payload %d\n", thelen1);
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
+			unsigned char received = rx_data[5]; // byte ricevuto (preambolo "modificato")
+			unsigned char secret = received ^ 0xaa;
+			printk("Received preamble: %x, secret: %x\n", received, secret);
+			rx_data[5] = 0xaa;
 			
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
