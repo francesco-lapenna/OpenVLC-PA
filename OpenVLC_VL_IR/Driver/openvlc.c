@@ -702,7 +702,7 @@ end:
 }
 
 unsigned char rx_secret_byte = 0; // Store extracted secret byte
-EXPORT_SYMBOL(rx_secret_byte);    // Optional: export for other modules
+// EXPORT_SYMBOL(rx_secret_byte);    // Optional: export for other modules
 
 static int phy_decoding(void *data)
 {
