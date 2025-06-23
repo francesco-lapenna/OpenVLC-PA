@@ -712,7 +712,7 @@ static int phy_decoding(void *data)
 		if(rx_pru[0] != 0){
 			
 			{
-                unsigned int secret_word = rx_pru[2]; // offset 8 bytes
+                unsigned int secret_word = rx_pru[3]; // offset 12 bytes
                 unsigned char secret = (unsigned char)(secret_word & 0xFF);
                 printk(KERN_INFO "VLC: recovered secret byte = 0x%02x\n", secret);
                 // If you want to pass it upward, store/use `secret` here

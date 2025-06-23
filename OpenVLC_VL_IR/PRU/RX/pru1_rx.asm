@@ -74,9 +74,9 @@ PREAMBLE_DETECTED:
 	XOR r22, r22, r23           ; r22 = recovered_secret
 	; *** EDIT: store recovered_secret into shared memory at base+8 ***
 	; r1 still holds shared base 0x00002000 from START1/RESTART
-	LDI32 r24, 0x00000008       ; offset
-	ADD r24, r1, r24            ; r24 = 0x00002000 + 8
-	SBBO &r22, r24, 0, 1        ; store low byte of r22 at [base+8]
+	LDI32 r24, 0x0000000C       ; offset (was 0x08, now 0x0C)
+	ADD r24, r1, r24            ; r24 = 0x00002000 + 12
+	SBBO &r22, r24, 0, 1        ; store low byte of r22 at [base+12]
 	; Optionally clear for next frame:
 	LDI32 r22, 0x00000000
 
