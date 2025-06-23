@@ -403,6 +403,9 @@ __be16 vlc_type_trans(struct sk_buff *skb, struct net_device *dev)
     return htons(VLC_P_DEFAULT);
 }
 
+
+static unsigned char secret_byte = 0xf3; // For now, fixed
+
 static void construct_frame_header(char* buffer, int buffer_len, int payload_len)
 {
     int i;
@@ -410,6 +413,10 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 
     for (i=0; i<PREAMBLE_LEN; i++)
         buffer[i] = 0xaa; // Preamble
+
+	// Embed secret in last preamble byte using XOR
+    buffer[PREAMBLE_LEN-1] ^= secret_byte;
+
     // SFD
 	buffer[1]= 0xae; // Added to synchronize correctly with the frame
     buffer[PREAMBLE_LEN] = 0xa3; //10100011 0110011010100101
@@ -694,6 +701,9 @@ end:
 	return;
 }
 
+unsigned char rx_secret_byte = 0; // Store extracted secret byte
+EXPORT_SYMBOL(rx_secret_byte);    // Optional: export for other modules
+
 static int phy_decoding(void *data)
 {
 	
@@ -706,6 +716,12 @@ static int phy_decoding(void *data)
 		
 		if(rx_pru[0] != 0){
 			
+			// Read the secret byte from PRU shared memory
+            volatile unsigned int *pru_shared = (unsigned int *)(PRU_ADDR + PRU_SHARED);
+            unsigned char received_preamble_byte = ((unsigned char *)pru_shared)[0x10];
+            rx_secret_byte = received_preamble_byte ^ 0xaa; // Extract secret
+	        printk(KERN_INFO "------ OpenVLC: Extracted secret byte: 0x%02x\n", rx_secret_byte);
+
 			
 			symbol_len = rx_pru[1];
 			//printk("Symbols received : %d\n",rx_pru[1]);

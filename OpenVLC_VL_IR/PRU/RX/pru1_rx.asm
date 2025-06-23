@@ -58,6 +58,10 @@ RESTART:
 	; QBEQ PREAMBLE_DETECTED, r25, r15
 	; JMP GET_PREAMBLE
 PREAMBLE_DETECTED:
+    ; Store the last preamble byte (r25 holds the preamble, so extract the LSB)
+    AND r22, r25, 0xFF         ; r22 = last preamble byte received
+    LDI32 r23, 0x00010010      ; Shared memory address for secret byte
+    SBBO &r22, r23, 0, 4       ; Store r22 at shared memory
 ;;;;;;;;; GET SFD ;;;;;;;;;
 	set r30, r30.t10
 	JAL r11.w0, GET_SAMPLE
