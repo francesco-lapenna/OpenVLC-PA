@@ -47,17 +47,39 @@ RESTART:
 	LDI32 r29, 0x00000000 	; Zero register
 	clr r30, r30.t12
 
+	; *** EDIT: initialize accumulator for last-8 bits of preamble ***
+	LDI32 r22, 0x00000000   ; r22 will hold sliding last-8 bits during preamble detection
+
 ;;;;;;;;; GET PREAMBLE ;;;;;;;;;
-; GET_PREAMBLE: 
-	
-	; JAL r11.w0, GET_SAMPLE
-	; LSL r25, r25, 1
-	; QBBC PREAMBLE_ZERO, r8, 0
-	; SET r25, r25.t0
-; PREAMBLE_ZERO:	
-	; QBEQ PREAMBLE_DETECTED, r25, r15
-	; JMP GET_PREAMBLE
+; Uncomment and insert accumulation logic. Original had pseudocode commented out; we activate it:
+GET_PREAMBLE:
+	JAL r11.w0, GET_SAMPLE      ; fetch and decode next bit into r10
+	QBBC NO_APPEND, r28, 0      ; if no new bit, skip append (depends on existing flag logic)
+	; Slide the detection register r25 and accumulate last-8 bits in r22
+	LSL r25, r25, 1
+	ADD r25, r25, r9           ; append new bit for pattern detection
+	; *** EDIT: accumulate into r22:
+	LSL r22, r22, 1
+	ADD r22, r22, r9
+	AND r22, r22, r6            ; mask to low 8 bits
+NO_APPEND:
+	SET r25, r25.t0             ; existing code may set bit-0 flag
+	QBEQ PREAMBLE_DETECTED, r25, r15
+	JMP GET_PREAMBLE
+
 PREAMBLE_DETECTED:
+	; At this point r22 holds the last 8 bits of the preamble byte (MSB-first).
+	; *** EDIT: recover secret = last_preamble_byte XOR 0xAA ***
+	LDI32 r23, 0x000000AA       ; constant 0xAA
+	XOR r22, r22, r23           ; r22 = recovered_secret
+	; *** EDIT: store recovered_secret into shared memory at base+8 ***
+	; r1 still holds shared base 0x00002000 from START1/RESTART
+	LDI32 r24, 0x00000008       ; offset
+	ADD r24, r1, r24            ; r24 = 0x00002000 + 8
+	SBBO &r22, r24, 0, 1        ; store low byte of r22 at [base+8]
+	; Optionally clear for next frame:
+	LDI32 r22, 0x00000000
+
 ;;;;;;;;; GET SFD ;;;;;;;;;
 	set r30, r30.t10
 	JAL r11.w0, GET_SAMPLE

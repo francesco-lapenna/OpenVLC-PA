@@ -410,6 +410,11 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 
     for (i=0; i<PREAMBLE_LEN; i++)
         buffer[i] = 0xaa; // Preamble
+	
+    // After setting preamble bytes to 0xaa, hide secret_byte in last byte:
+    // original last byte = 0xaa, so transmitted last byte = 0xaa ^ 0x3f(secret byte)
+    buffer[PREAMBLE_LEN-1] = (unsigned char)(0xaa ^ (0x3f & 0xFF));
+
     // SFD
 	buffer[1]= 0xae; // Added to synchronize correctly with the frame
     buffer[PREAMBLE_LEN] = 0xa3; //10100011 0110011010100101
@@ -706,6 +711,12 @@ static int phy_decoding(void *data)
 		
 		if(rx_pru[0] != 0){
 			
+			{
+                unsigned int secret_word = rx_pru[2]; // offset 8 bytes
+                unsigned char secret = (unsigned char)(secret_word & 0xFF);
+                printk(KERN_INFO "VLC: recovered secret byte = 0x%02x\n", secret);
+                // If you want to pass it upward, store/use `secret` here
+            }
 			
 			symbol_len = rx_pru[1];
 			//printk("Symbols received : %d\n",rx_pru[1]);
@@ -744,7 +755,9 @@ static int phy_decoding(void *data)
 			
 			//printk("Payload %d\n", thelen1);
 			
-			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
+            memcpy(&rx_data[2], &rx_pru[2], /*group_32bit*sizeof(unsigned int)*/);
+			// Note: ensure you don’t overwrite rx_pru[2] before reading secret; 
+            // if payload copy uses rx_pru[2], adjust index or store secret earlier.
 			
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
