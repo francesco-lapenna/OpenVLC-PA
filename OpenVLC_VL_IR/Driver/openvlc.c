@@ -755,7 +755,7 @@ static int phy_decoding(void *data)
 			
 			//printk("Payload %d\n", thelen1);
 			
-            memcpy(&rx_data[2], &rx_pru[2], /*group_32bit*sizeof(unsigned int)*/);
+            memcpy(&rx_data[2], &rx_pru[2]/*, group_32bit*sizeof(unsigned int)*/);
 			// Note: ensure you don’t overwrite rx_pru[2] before reading secret; 
             // if payload copy uses rx_pru[2], adjust index or store secret earlier.
 			
