@@ -407,6 +407,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 {
     int i;
     //unsigned short crc;
+	unsigned char otp = 0xcf;  // TODO funzione per generare otp
 
     for (i=0; i<PREAMBLE_LEN; i++)
         buffer[i] = 0xaa; // Preamble
@@ -422,6 +423,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     // Source address
     buffer[PREAMBLE_LEN+5] = (unsigned char) ((self_id>>8) & 0xff);
     buffer[PREAMBLE_LEN+6] = (unsigned char) (self_id & 0xff);
+	buffer[PREAMBLE_LEN+6] ^= otp;
     // CRC
     //crc = crc16(buffer+PREAMBLE_LEN+SFD_LEN, MAC_HDR_LEN+payload_len);
     //buffer[buffer_len-2] = (char) ((0xff00&crc)>>8); // CRC byte 1
@@ -745,6 +747,16 @@ static int phy_decoding(void *data)
 			//printk("Payload %d\n", thelen1);
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
+			printk("rx_data[0..9]:");  // TODO commentare
+			for (i = 0; i < 10; i++) {
+				printk(" %02x", (unsigned char)rx_data[i]);
+			}  //
+			printk("\n");
+			unsigned char received = rx_data[5]; // byte ricevuto (src "modificato")
+			unsigned char def_byte = (unsigned char)(self_id & 0xff);
+			unsigned char secret = received ^ def_byte;
+			printk("Received preamble: %02x, secret: %02x\n", received, secret);
+			rx_data[5] = def_byte;
 			
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
