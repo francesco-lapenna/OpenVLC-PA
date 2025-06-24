@@ -1,5 +1,6 @@
 Fork di OpenVLC  
-Branch: PHY-Authentication
+Branch: PHY-Authentication > prova 11
+provo a modificare il codice assembly in modo tale che salvi anche il preambolo in memoria
 
 # OpenVLC 
 
