@@ -31,7 +31,7 @@ RESTART:
 	LDI32 r12, 0x00000000	; 32 - symbols group
 	LDI32 r13, 0x00000000	; Symbols in last register
 	LDI32 r14, 32 			; Number of bits per memory address
-	LDI32 r15, 0xAAAAAEAA	; Preamble
+	LDI32 r15, 0xAAAEAAAA	; Preamble
 	LDI32 r16, 0x00000000 	; Temporary pointer register
 	LDI32 r17, 0x00000000	; Reg storing samples counter
 	LDI32 r18, 1021		; Threshold 803 (75kohm)
