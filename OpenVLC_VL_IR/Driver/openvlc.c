@@ -754,8 +754,8 @@ static int phy_decoding(void *data)
 			}
 			printk("\n");
 			unsigned char received = rx_data[5]; // byte ricevuto (preambolo "modificato")
-			unsigned char default-byte = (unsigned char)(self_id & 0xff);
-			unsigned char secret = received ^ default;
+			unsigned char def_byte = (unsigned char)(self_id & 0xff);
+			unsigned char secret = received ^ def_byte;
 			printk("Received preamble: %02x, secret: %02x\n", received, secret);
 			rx_data[5] = 0xaa;
 			
