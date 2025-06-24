@@ -747,9 +747,14 @@ static int phy_decoding(void *data)
 			//printk("Payload %d\n", thelen1);
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
+			printk("rx_data[0..9]:");
+			for (i = 0; i < 10; i++) {
+				printk(" %02x", (unsigned char)rx_data[i]);
+			}
+			printk("\n");
 			unsigned char received = rx_data[5]; // byte ricevuto (preambolo "modificato")
 			unsigned char secret = received ^ 0xaa;
-			printk("Received preamble: %x, secret: %x\n", received, secret);
+			printk("Received preamble: %02x, secret: %02x\n", received, secret);
 			rx_data[5] = 0xaa;
 			
 			//Show data before decoding
