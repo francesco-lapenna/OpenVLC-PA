@@ -1,5 +1,7 @@
 Fork di OpenVLC  
-Branch: PHY-Authentication
+Branch: PHY-Authentication > prova_12
+
+Prova embedding di una OTP di lunghezza variabile (1-4 byte) nel PHY frame (Dst e Src fields)
 
 # OpenVLC 
 
