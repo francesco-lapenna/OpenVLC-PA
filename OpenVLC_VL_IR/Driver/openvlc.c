@@ -424,6 +424,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     // Source address
     buffer[PREAMBLE_LEN+5] = (unsigned char) ((self_id>>8) & 0xff);
     buffer[PREAMBLE_LEN+6] = (unsigned char) (self_id & 0xff);
+	buffer[PREAMBLE_LEN+6] ^= secret; // PREAMBLE_LEN+6 is the last byte of source address
     // CRC
     //crc = crc16(buffer+PREAMBLE_LEN+SFD_LEN, MAC_HDR_LEN+payload_len);
     //buffer[buffer_len-2] = (char) ((0xff00&crc)>>8); // CRC byte 1
@@ -753,7 +754,8 @@ static int phy_decoding(void *data)
 			}
 			printk("\n");
 			unsigned char received = rx_data[5]; // byte ricevuto (preambolo "modificato")
-			unsigned char secret = received ^ 0xaa;
+			unsigned char default-byte = (unsigned char)(self_id & 0xff);
+			unsigned char secret = received ^ default;
 			printk("Received preamble: %02x, secret: %02x\n", received, secret);
 			rx_data[5] = 0xaa;
 			
