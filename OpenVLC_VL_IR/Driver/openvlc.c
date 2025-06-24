@@ -413,7 +413,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
         buffer[i] = 0xaa; // Preamble
     // SFD
 	buffer[1]= 0xae; // Added to synchronize correctly with the frame
-	buffer[PREAMBLE_LEN-1] = 0xaa ^ secret;  // ultimo byte del preambolo XOR con segreto
+	//buffer[PREAMBLE_LEN-1] = 0xaa ^ secret;  // ultimo byte del preambolo XOR con segreto
     buffer[PREAMBLE_LEN] = 0xa3; //10100011 0110011010100101
     // Length of payload
     buffer[PREAMBLE_LEN+1] = (unsigned char) ((payload_len>>8) & 0xff);
