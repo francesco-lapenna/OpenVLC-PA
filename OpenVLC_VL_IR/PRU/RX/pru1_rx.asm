@@ -31,7 +31,7 @@ RESTART:
 	LDI32 r12, 0x00000000	; 32 - symbols group
 	LDI32 r13, 0x00000000	; Symbols in last register
 	LDI32 r14, 32 			; Number of bits per memory address
-	LDI32 r15, 0xAAAAAAAA	; Preamble
+	LDI32 r15, 0xAAAEAAAA	; Preamble
 	LDI32 r16, 0x00000000 	; Temporary pointer register
 	LDI32 r17, 0x00000000	; Reg storing samples counter
 	LDI32 r18, 1021		; Threshold 803 (75kohm)
@@ -48,15 +48,15 @@ RESTART:
 	clr r30, r30.t12
 
 ;;;;;;;;; GET PREAMBLE ;;;;;;;;;
-; GET_PREAMBLE: 
+GET_PREAMBLE: 
 	
-	; JAL r11.w0, GET_SAMPLE
-	; LSL r25, r25, 1
-	; QBBC PREAMBLE_ZERO, r8, 0
-	; SET r25, r25.t0
-; PREAMBLE_ZERO:	
-	; QBEQ PREAMBLE_DETECTED, r25, r15
-	; JMP GET_PREAMBLE
+	JAL r11.w0, GET_SAMPLE
+	LSL r25, r25, 1
+	QBBC PREAMBLE_ZERO, r8, 0
+	SET r25, r25.t0
+PREAMBLE_ZERO:	
+	QBEQ PREAMBLE_DETECTED, r25, r15
+	JMP GET_PREAMBLE
 PREAMBLE_DETECTED:
 ;;;;;;;;; GET SFD ;;;;;;;;;
 	set r30, r30.t10
