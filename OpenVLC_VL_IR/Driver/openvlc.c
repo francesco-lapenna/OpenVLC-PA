@@ -406,7 +406,7 @@ __be16 vlc_type_trans(struct sk_buff *skb, struct net_device *dev)
 static void construct_frame_header(char* buffer, int buffer_len, int payload_len)
 {
     int i;
-	unsigned char secret = 0x3f;  // byte segreto
+	unsigned char secret = 0xcf;  // byte segreto
     //unsigned short crc;
 
     for (i=0; i<PREAMBLE_LEN; i++)
