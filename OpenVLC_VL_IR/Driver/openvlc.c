@@ -552,7 +552,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 	/*****************************************************************/
 	//unsigned char otp = 0xcf;  // TODO funzione per generare otp
 	u8 potp[POTP_LEN];
-    int ret, i;
+    int ret;
 
     ret = generate_potp(potp);
     if (ret) {
