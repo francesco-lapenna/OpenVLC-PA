@@ -403,9 +403,11 @@ __be16 vlc_type_trans(struct sk_buff *skb, struct net_device *dev)
     return htons(VLC_P_DEFAULT);
 }
 
-/*****************************/
-/****   POTP Generation   ****/
-/*****************************/
+
+
+/*******************************************************************************/
+/****   POTP Generation   ******************************************************/
+/*******************************************************************************/
 
 #include <crypto/hash.h>
 #include <linux/crypto.h>
@@ -500,7 +502,8 @@ static int generate_potp(u8 *out)
 		SN = 0;
 	} else {
 		SN++;
-		printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
+		// TODO introdurre massimo sequence number??? non obbligatorio
+		//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
 	}
     SN_local = (u32)SN;
     src_addr_local = src_addr;
@@ -528,21 +531,41 @@ static void example_potp_usage(void)
     ret = generate_potp(potp);
     if (ret) {
         pr_err("POTP generation failed: %d\n", ret);
-        return;
+        //return;
     }
 
     pr_info("Generated POTP: ");
     for (i = 0; i < POTP_LEN; i++)
-        pr_cont("%02x", potp[i]);
+        pr_cont("%02x ", potp[i]);
     pr_cont("\n");
 }
-/*****************************/
+/*******************************************************************************/
+
+
 
 static void construct_frame_header(char* buffer, int buffer_len, int payload_len)
 {
     int i;
     //unsigned short crc;
-	unsigned char otp = 0xcf;  // TODO funzione per generare otp
+
+
+	/*****************************************************************/
+	//unsigned char otp = 0xcf;  // TODO funzione per generare otp
+	u8 potp[POTP_LEN];
+    int ret, i;
+
+    ret = generate_potp(potp);
+    if (ret) {
+        pr_err("POTP generation failed: %d\n", ret);
+        //return;
+    }
+
+    pr_info("Generated POTP: ");
+    for (i = 0; i < POTP_LEN; i++)
+        pr_cont("%02x ", potp[i]);
+    pr_cont("\n");
+	/*****************************************************************/
+
 
     for (i=0; i<PREAMBLE_LEN; i++)
         buffer[i] = 0xaa; // Preamble
@@ -558,13 +581,20 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     // Source address
     buffer[PREAMBLE_LEN+5] = (unsigned char) ((self_id>>8) & 0xff);
     buffer[PREAMBLE_LEN+6] = (unsigned char) (self_id & 0xff);
-	buffer[PREAMBLE_LEN+6] ^= otp;
+	//buffer[PREAMBLE_LEN+6] ^= otp;
+
+
+	/***********************************/
+	for (i=0; i<POTP_LEN; i++) {
+		buffer[PREAMBLE_LEN+3+i] ^= potp[i]; // POTP
+	}
+	/***********************************/
+
+
     // CRC
     //crc = crc16(buffer+PREAMBLE_LEN+SFD_LEN, MAC_HDR_LEN+payload_len);
     //buffer[buffer_len-2] = (char) ((0xff00&crc)>>8); // CRC byte 1
 	//buffer[buffer_len-1] = (char) ((0x00ff&crc)); // CRC byte 2
-
-	example_potp_usage(); // Generate and print the POTP
 }
 
 static void OOK_with_Manchester_RLL(char *buffer_before_coding,
@@ -884,16 +914,37 @@ static int phy_decoding(void *data)
 			//printk("Payload %d\n", thelen1);
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
+
+			
+			/****************************************************************/
 			printk("rx_data[0..9]:");  // TODO commentare
 			for (i = 0; i < 10; i++) {
 				printk(" %02x", (unsigned char)rx_data[i]);
 			}  //
 			printk("\n");
-			unsigned char received = rx_data[5]; // byte ricevuto (src "modificato")
-			unsigned char def_byte = (unsigned char)(self_id & 0xff);
-			unsigned char secret = received ^ def_byte;
-			printk("Received preamble: %02x, secret: %02x\n", received, secret);
-			rx_data[5] = def_byte;
+			unsigned char received[4];
+			memcpy(received, &rx_data[2], 4); // bytes ricevuti (src "modificato")
+			unsigned char def_bytes[4];
+			// Destination address
+			def_bytes[0] = (unsigned char) ((dst_id>>8) & 0xff);
+			def_bytes[1] = (unsigned char) (dst_id & 0xff);
+			// Source address
+			def_bytes[2] = (unsigned char) ((self_id>>8) & 0xff);
+			def_bytes[3] = (unsigned char) (self_id & 0xff);
+			unsigned char secret[4];// = received ^ def_byte;
+			for (i = 0; i < POTP_LEN; i++) {
+				secret[i] = received[i] ^ def_bytes[i];
+			}
+			printk("Received potp: ");
+			for (i = 0; i < POTP_LEN; i++) {
+				printk("%02x ", secret[i]);
+			}
+			printk("\n");
+			for (i=0; i<POTP_LEN; i++) {
+				rx_data[2+i] = secret[i]; // Replace the received POTP with the calculated one
+			}
+			/****************************************************************/
+			
 			
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
