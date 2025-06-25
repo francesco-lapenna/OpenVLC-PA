@@ -540,6 +540,8 @@ static void example_potp_usage(void)
     pr_cont("\n");
 }
 /*******************************************************************************/
+/*******************************************************************************/
+/*******************************************************************************/
 
 
 
@@ -549,6 +551,8 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     //unsigned short crc;
 
 
+	/*****************************************************************/
+	/*** POTP Generation *********************************************/
 	/*****************************************************************/
 	//unsigned char otp = 0xcf;  // TODO funzione per generare otp
 	u8 potp[POTP_LEN];
@@ -560,10 +564,10 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
         //return;
     }
 
-    pr_info("Generated POTP: ");
-    for (i = 0; i < POTP_LEN; i++)
-        pr_cont("%02x ", potp[i]);
-    pr_cont("\n");
+    pr_info("Generated POTP: ");  // TODO commentare
+    for (i = 0; i < POTP_LEN; i++)  //
+        pr_cont("%02x ", potp[i]);  //
+    pr_cont("\n");  //
 	/*****************************************************************/
 
 
@@ -581,9 +585,10 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     // Source address
     buffer[PREAMBLE_LEN+5] = (unsigned char) ((self_id>>8) & 0xff);
     buffer[PREAMBLE_LEN+6] = (unsigned char) (self_id & 0xff);
-	//buffer[PREAMBLE_LEN+6] ^= otp;
+	
 
-
+	/***********************************/
+	/* POTP Embedding  *****************/
 	/***********************************/
 	for (i=0; i<POTP_LEN; i++) {
 		buffer[PREAMBLE_LEN+3+i] ^= potp[i]; // POTP
@@ -917,32 +922,36 @@ static int phy_decoding(void *data)
 
 			
 			/****************************************************************/
-			printk("                    |-dst&src^otp|\n");
-			printk("rx_data[0..9]:");  // TODO commentare
-			for (i = 0; i < 10; i++) {
-				printk(" %02x", (unsigned char)rx_data[i]);
+			printk("                    |dst&src^otp|\n");  // TODO commentare
+			printk("rx_data[0..9]:");  //
+			for (i = 0; i < 10; i++) {  //
+				printk(" %02x", (unsigned char)rx_data[i]);  //
 			}  //
-			printk("\n");
-			unsigned char received[4];
-			memcpy(received, &rx_data[2], 4); // bytes ricevuti (src "modificato")
-			unsigned char def_bytes[4];
+			printk("\n");  //
+
+			unsigned char received_bytes[4];  // bytes ricevuti (src e dst "modificati")
+			memcpy(received_bytes, &rx_data[2], 4);
+
+			unsigned char def_bytes[4];  // byte originali come da construct_frame_header
 			// Destination address
 			def_bytes[0] = (unsigned char) ((dst_id>>8) & 0xff);
 			def_bytes[1] = (unsigned char) (dst_id & 0xff);
 			// Source address
 			def_bytes[2] = (unsigned char) ((self_id>>8) & 0xff);
 			def_bytes[3] = (unsigned char) (self_id & 0xff);
-			unsigned char secret[4];// = received ^ def_byte;
+
+			unsigned char received_otp[4];  // OTP ricevuta
 			for (i = 0; i < POTP_LEN; i++) {
-				secret[i] = received[i] ^ def_bytes[i];
+				received_otp[i] = received_bytes[i] ^ def_bytes[i];
 			}
-			printk("Received potp: ");
-			for (i = 0; i < POTP_LEN; i++) {
-				printk("%02x ", secret[i]);
-			}
-			printk("\n");
+			printk("Received potp:");  // TODO commentare
+			for (i = 0; i < POTP_LEN; i++) {  //
+				printk(" %02x", received_otp[i]);  //
+			}  //
+			printk("\n");  //
+
 			for (i=0; i<POTP_LEN; i++) {
-				rx_data[2+i] = secret[i]; // Replace the received POTP with the calculated one
+				rx_data[2+i] = def_bytes[i]; // Sostituisce i dati con il contenuto originale
 			}
 			/****************************************************************/
 			
