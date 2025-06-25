@@ -495,6 +495,12 @@ static int generate_potp(u8 *out)
 
     // Prepare data
     T = ((int)ktime_get_real_seconds() - T0) / X;
+	if (T != T_prev) {
+		T_prev = T;
+		SN = 0;
+	} else {
+		SN++;
+	}
     SN_local = (u32)SN;
     src_addr_local = src_addr;
 
@@ -529,31 +535,6 @@ static void example_potp_usage(void)
         pr_cont("%02x", potp[i]);
     pr_cont("\n");
 }
-
-/*
-generate_otp() generates a one-time password (OTP) for the frame header.
-	POTP(K, T, SN, src-addr) = Truncate(HMAC(K, T, SN, src-addr))
-arguments:
-	PSK (Pre-Shared Key)
-	T = (current Unix time − T0)/X 
-		where T0 denote the unix time  to start counting time steps and X is the time step in seconds.
-	SN (Sequence Number) is the number of the frame sent in the current time step.
-	src_addr is the 16-bit MAC address of the sender.
-
-	returns:
-	otp a 4 bytes one time password
-
-char* generate_otp()
-{
-	int T = ((ktime_get_real_seconds() - T0) / X); // Current time step
-	if(T != T_prev) {
-		T_prev = T; // Update the previous time step
-		SN = 0; // Reset the sequence number for the new time step
-	} else {
-		SN++; // Increment the sequence number in the same time step
-	}
-	
-}*/
 /*****************************/
 
 static void construct_frame_header(char* buffer, int buffer_len, int payload_len)
@@ -581,7 +562,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     //crc = crc16(buffer+PREAMBLE_LEN+SFD_LEN, MAC_HDR_LEN+payload_len);
     //buffer[buffer_len-2] = (char) ((0xff00&crc)>>8); // CRC byte 1
 	//buffer[buffer_len-1] = (char) ((0x00ff&crc)); // CRC byte 2
-	
+
 	example_potp_usage(); // Generate and print the POTP
 }
 
