@@ -917,6 +917,7 @@ static int phy_decoding(void *data)
 
 			
 			/****************************************************************/
+			printk("rx_data[0..9]:      |-dst&src^otp|\n");
 			printk("rx_data[0..9]:");  // TODO commentare
 			for (i = 0; i < 10; i++) {
 				printk(" %02x", (unsigned char)rx_data[i]);
