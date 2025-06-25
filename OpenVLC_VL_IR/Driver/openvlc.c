@@ -500,6 +500,7 @@ static int generate_potp(u8 *out)
 		SN = 0;
 	} else {
 		SN++;
+		printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
 	}
     SN_local = (u32)SN;
     src_addr_local = src_addr;
