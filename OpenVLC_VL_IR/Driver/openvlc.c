@@ -409,7 +409,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     //unsigned short crc;
 
     for (i=0; i<PREAMBLE_LEN; i++)
-        buffer[i] = 0xaa; // Preamble
+        buffer[i] = 0xf1; // Preamble
     // SFD
 	buffer[1]= 0xae; // Added to synchronize correctly with the frame
     buffer[PREAMBLE_LEN] = 0xa3; //10100011 0110011010100101
