@@ -111,7 +111,6 @@ static void example_potp_usage(void)
 {
     int T
     T = ((int)ktime_get_real_seconds() - T0) / X;
-    T -= time_steps_ago; // Adjust T based on the number of time steps ago
 	if (T != T_prev) {
 		T_prev = T;
 		SN = 0;
