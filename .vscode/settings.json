@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "pHYaUTHp2p.C": "cpp"
+        "pHYaUTHp2p.C": "cpp",
+        "types.h": "c"
     }
 }

@@ -408,6 +408,12 @@ __be16 vlc_type_trans(struct sk_buff *skb, struct net_device *dev)
 }
 
 
+// informations supposed to be known by both sender and receiver:
+static int T_prev = 0; // Previous time step, initialized to 0
+static const char* PSK = "0123456789abcdef"; // Example PSK
+static const unsigned short src_addr = 0x1234; // Example source address
+static int SN = 0; // Sequence Number, initialized to 0
+
 static void construct_frame_header(char* buffer, int buffer_len, int payload_len)
 {
     int i;
@@ -417,11 +423,22 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 	/*****************************************************************/
 	/*** POTP Generation *********************************************/
 	/*****************************************************************/
-	//unsigned char otp = 0xcf;  // TODO funzione per generare otp
+	int T
+    T = ((int)ktime_get_real_seconds() - T0) / X;
+    T -= time_steps_ago; // Adjust T based on the number of time steps ago
+	if (T != T_prev) {
+		T_prev = T;
+		SN = 0;
+	} else {
+		SN++;
+		// TODO introdurre massimo sequence number??? non obbligatorio
+		//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
+	}
+
 	u8 potp[POTP_LEN];
     int ret;
 
-    ret = generate_potp(potp);
+    ret = generate_potp(potp, PSK, src_addr, SN, T);
     if (ret) {
         pr_err("POTP generation failed: %d\n", ret);
         //return;
@@ -783,7 +800,9 @@ static int phy_decoding(void *data)
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 
-			
+
+			/****************************************************************/
+			/*** OTP Extraction *********************************************/
 			/****************************************************************/
 			printk("                    |dst&src^otp|\n");  // TODO commentare
 			printk("rx_data[0..9]:");  //

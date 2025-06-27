@@ -1,8 +1,8 @@
 #include "PhyAuthP2P.h"
 
-/*******************************************************************************/
-/****   POTP Generation   ******************************************************/
-/*******************************************************************************/
+/*******************/
+/* POTP Generation */
+/*******************/
 
 #include <crypto/hash.h>
 #include <linux/crypto.h>
@@ -18,14 +18,6 @@
 #include <linux/uaccess.h>
 #include <linux/errno.h>
 #include <linux/random.h>
-
-// informations supposed to be known by both sender and receiver:
-static const char* PSK = "0123456789abcdef"; // Example PSK
-static const unsigned short src_addr = 0x1234; // Example source address
-static const int X = 3;  // Time step in seconds
-static const int T0 = 1747636421;  // Example start time in Unix
-static int T_prev = 0; // Previous time step, initialized to 0
-static int SN = 0; // Sequence Number, initialized to 0
 
 
 static int hmac_sha256(const u8 *key, unsigned int keylen,
@@ -81,24 +73,15 @@ static u32 truncate(const u8 *hmac_result, size_t hmac_len)
 }
 
 // POTP generation function
-int generate_potp(u8 *out)
+int generate_potp(u8 *out, char* PSK, unsigned short src_addr, int SN, int T)
 {
     u8 hmac_result[32]; // SHA-256 output size
     u8 data[4 + 4 + 2]; // T (4 bytes), SN (4 bytes), src_addr (2 bytes)
-    int T, ret;
+    int ret;
     u32 SN_local;
     unsigned short src_addr_local;
 
     // Prepare data
-    T = ((int)ktime_get_real_seconds() - T0) / X;
-	if (T != T_prev) {
-		T_prev = T;
-		SN = 0;
-	} else {
-		SN++;
-		// TODO introdurre massimo sequence number??? non obbligatorio
-		//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
-	}
     SN_local = (u32)SN;
     src_addr_local = src_addr;
 
@@ -117,22 +100,40 @@ int generate_potp(u8 *out)
     return 0;
 }
 
+/*
+// informations supposed to be known by both sender and receiver:
+static int T_prev = 0; // Previous time step, initialized to 0
+static const char* PSK = "0123456789abcdef"; // Example PSK
+static const unsigned short src_addr = 0x1234; // Example source address
+static int SN = 0; // Sequence Number, initialized to 0
+
 static void example_potp_usage(void)
 {
+    int T
+    T = ((int)ktime_get_real_seconds() - T0) / X;
+    T -= time_steps_ago; // Adjust T based on the number of time steps ago
+	if (T != T_prev) {
+		T_prev = T;
+		SN = 0;
+	} else {
+		SN++;
+		// TODO introdurre massimo sequence number??? non obbligatorio
+		//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
+	}
+
     u8 potp[POTP_LEN];
     int ret, i;
 
-    ret = generate_potp(potp);
+    ret = generate_potp(potp, PSK, src_addr, SN, T)
     if (ret) {
         pr_err("POTP generation failed: %d\n", ret);
-        //return;
+        return;
     }
 
     pr_info("Generated POTP: ");
     for (i = 0; i < POTP_LEN; i++)
         pr_cont("%02x ", potp[i]);
     pr_cont("\n");
-}
-/*******************************************************************************/
-/*******************************************************************************/
-/*******************************************************************************/
+}*/
+
+/*******************/

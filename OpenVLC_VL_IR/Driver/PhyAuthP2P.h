@@ -3,7 +3,9 @@
 
 #include <linux/types.h>
 
-#define POTP_LEN 4 // 4 bytes output
+#define POTP_LEN 4  // 4 bytes output
+#define X 3  // Time step in seconds
+#define T0 1747636421  // Example start time in Unix
 
 static int hmac_sha256(const u8 *key, unsigned int keylen,
                        const u8 *data, unsigned int datalen,
