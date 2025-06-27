@@ -411,7 +411,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     for (i=0; i<PREAMBLE_LEN; i++)
         buffer[i] = 0xaa; // Preamble
     // SFD
-	//buffer[1]= 0xae; // Added to synchronize correctly with the frame
+	buffer[1]= 0xae; // Added to synchronize correctly with the frame
     buffer[PREAMBLE_LEN] = 0xa3; //10100011 0110011010100101
     // Length of payload
     buffer[PREAMBLE_LEN+1] = (unsigned char) ((payload_len>>8) & 0xff);
@@ -654,7 +654,7 @@ static void get_the_data_rx(char * rx_data)
             par_rx[i] = rx_data[j+index_block*ECC_LEN+i];
             //printk(" %02x", par[i]);
         }
-		
+		printk("------- get the data rx -------\n");
 		if (index_block < num_of_blocks-1) {
             num_err = decode_rs8(rs_decoder, rx_data+OCTET_LEN+index_block*block_size, 
                 par_rx, block_size, NULL, 0, NULL, 0, NULL);
