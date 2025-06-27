@@ -48,29 +48,15 @@ RESTART:
 	clr r30, r30.t12
 
 ;;;;;;;;; GET PREAMBLE ;;;;;;;;;
-GET_PREAMBLE:
-    ; ==== abilita il flag “nuovo bit” ====
-    BITSET   r28, 0           ; r28.b0 ← 1
-
-    ; ==== leggi un nuovo campione ====
-    JAL      r11.w0, GET_SAMPLE   ; ritorno in r11.b0
-
-    ; ==== se il bit non è ancora stato processato, skippa ====
-    QBBC     NO_NEW_PB, r28, 0     ; se r28.b0==0 → vai a NO_NEW_PB
-
-    ; ==== estrai LSB da r11 e aggiorna shift-register ====
-    MOV      r10, r11          ; copia r11
-    AND      r10, r10, 1       ; r10 ← solo bit0 (0 o 1)
-    LSL      r25, r25, 1       ; shift‐left (NOTA: senza “#”)
-    ADD      r25, r25, r10     ; inserisci il nuovo bit in LSB
-    BITCLR   r28, 0            ; r28.b0 ← 0
-    AND      r25, r25, r6      ; tronca r25 ai soli N bit
-
-NO_NEW_PB:
-    ; ==== confronto col pattern di preambolo in r15 ====
-    QBEQ     PREAMBLE_DETECTED, r25, r15
-    JMP      GET_PREAMBLE
-	
+GET_PREAMBLE: 
+    JAL r11.w0, GET_SAMPLE         ; Get a new sample (result in r10)
+    LSL r25, r25, 1                ; Shift preamble register left by 1
+    AND r25, r25, r6               ; Mask to keep only last 8 bits (if r6=0xFF), adjust if needed
+    QBBC PREAMBLE_ZERO, r8, 0      ; If decoded bit is 0, skip setting bit
+    SET r25, r25.t0                ; Set LSB if decoded bit is 1
+PREAMBLE_ZERO:
+    QBEQ PREAMBLE_DETECTED, r25, r15 ; If preamble matches, done
+    JMP GET_PREAMBLE               ; Otherwise, keep searching
 PREAMBLE_DETECTED:
 ;;;;;;;;; GET SFD ;;;;;;;;;
 	set r30, r30.t10
