@@ -2,8 +2,6 @@
 #define PHYAUTHP2P_H
 
 #include <linux/types.h>
-#include <stdint.h>   // for uint8_t, uint32_t
-#include <stddef.h>   // for size_t
 
 #define POTP_LEN 4 // 4 bytes output
 
