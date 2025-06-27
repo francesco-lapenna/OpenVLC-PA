@@ -20,7 +20,6 @@
 #include <linux/random.h>
 
 // informations supposed to be known by both sender and receiver:
-#define POTP_LEN 4 // 4 bytes output
 static const char* PSK = "0123456789abcdef"; // Example PSK
 static const unsigned short src_addr = 0x1234; // Example source address
 static const int X = 3;  // Time step in seconds
