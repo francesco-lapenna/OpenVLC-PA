@@ -1,6 +1,9 @@
 #ifndef PHYAUTHP2P_H
 #define PHYAUTHP2P_H
 
+#include <stdint.h>   // for uint8_t, uint32_t
+#include <stddef.h>   // for size_t
+
 #define POTP_LEN 4 // 4 bytes output
 
 static int hmac_sha256(const u8 *key, unsigned int keylen,
