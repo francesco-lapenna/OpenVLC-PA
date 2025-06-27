@@ -467,13 +467,13 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     buffer[PREAMBLE_LEN+6] = (unsigned char) (self_id & 0xff);
 	
 
-	/***********************************/
-	/* POTP Embedding  *****************/
-	/***********************************/
+	/*****************************************************************/
+	/* POTP Embedding  ***********************************************/
+	/*****************************************************************/
 	for (i=0; i<POTP_LEN; i++) {
 		buffer[PREAMBLE_LEN+3+i] ^= potp[i]; // POTP
 	}
-	/***********************************/
+	/*****************************************************************/
 
 
     // CRC
@@ -801,9 +801,9 @@ static int phy_decoding(void *data)
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 
 
-			/****************************************************************/
-			/*** OTP Extraction *********************************************/
-			/****************************************************************/
+			/*****************************************************************/
+			/*** OTP Extraction **********************************************/
+			/*****************************************************************/
 			printk("                    |dst&src^otp|\n");  // TODO commentare
 			printk("rx_data[0..9]:");  //
 			for (i = 0; i < 10; i++) {  //
@@ -835,7 +835,56 @@ static int phy_decoding(void *data)
 			for (i=0; i<POTP_LEN; i++) {
 				rx_data[2+i] = def_bytes[i]; // Sostituisce i dati con il contenuto originale
 			}
-			/****************************************************************/
+
+			/*****************************************************************/
+			/*** OTP Verification ********************************************/
+			/*****************************************************************/
+			/*
+			definire i time step da controllare (precedenti all'attuale, successivi non ha senso)
+			definire i SN da controllare (successivi all'attuale, precedenti non ha senso)
+
+			*/
+			int T_before, T_after;
+			T_before = 2; T_after = 1;  // controlla T-2, T-1, T, T+1
+			int SN_before, SN_after;
+			SN_before = 1; SN_after = 4;  // controlla SN-1 SN, SN+1, SN+2, SN+3, SN+4
+
+			src_addr = (unsigned short)self_id;
+			int T;
+			T = ((int)ktime_get_real_seconds() - T0) / X;
+			if (T != T_prev) {
+				T_prev = T;
+				SN = 0;
+			} else {
+				SN++;
+				//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
+			}
+
+			int curr_T, curr_SN;
+			for (i = -SN_before; i <= SN_after; i++) {  // controlla SN-1, SN, SN+1, SN+2, SN+3, SN+4
+				for (int j = -T_before; j <= T_after; j++) {  // controlla T-2, T-1, T, T+1
+					curr_T = T + j;
+					curr_SN = SN + i;
+
+					u8 potp[POTP_LEN];
+					int ret;
+
+					ret = generate_potp(potp, PSK, src_addr, curr_SN, curr_T);  // genera la OTP attesa
+					if (ret) {
+						pr_err("POTP generation failed: %d\n", ret);
+						//return;
+					}
+
+					if (!memcmp(received_otp, potp, POTP_LEN)) {
+						SN = curr_SN;  // Aggiorna il Sequence Number all'ultimo verificato
+						printk(KERN_INFO "POTP verification successful for T=%d and SN=%d\n", curr_T, curr_SN);
+						goto otp_verified;
+					}
+				}
+			}
+			otp_verified:
+
+			/*****************************************************************/
 			
 			
 			//Show data before decoding
