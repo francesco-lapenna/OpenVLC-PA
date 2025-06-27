@@ -859,15 +859,14 @@ static int phy_decoding(void *data)
 				SN++;
 				//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
 			}
-
+			
+			u8 potp[POTP_LEN];
+			int ret;
 			int curr_T, curr_SN, i, j;
 			for (i = -SN_before; i <= SN_after; i++) {  // controlla SN-1, SN, SN+1, SN+2, SN+3, SN+4
 				for (j = -T_before; j <= T_after; j++) {  // controlla T-2, T-1, T, T+1
 					curr_T = T + j;
 					curr_SN = SN + i;
-
-					u8 potp[POTP_LEN];
-					int ret;
 
 					ret = generate_potp(potp, PSK, src_addr, curr_SN, curr_T);  // genera la OTP attesa
 					if (ret) {
@@ -876,12 +875,13 @@ static int phy_decoding(void *data)
 					}
 
 					if (!memcmp(received_otp, potp, POTP_LEN)) {
-						SN = curr_SN;  // Aggiorna il Sequence Number all'ultimo verificato
+						SN = curr_SN/*+1*/;  // Aggiorna il Sequence Number all'ultimo verificato
 						printk(KERN_INFO "POTP verification successful for T=%d and SN=%d\n", curr_T, curr_SN);
 						goto otp_verified;
 					}
 				}
 			}
+			printk(KERN_INFO "POTP verification failed!\n");
 			otp_verified:
 
 			/*****************************************************************/
