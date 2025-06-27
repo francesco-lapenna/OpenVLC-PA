@@ -15,7 +15,7 @@ static u32 truncate(const u8 *hmac_result, size_t hmac_len);
 
 int generate_potp(u8 *out, char* PSK, unsigned short src_addr, int SN, int T);
 
-static void example_potp_usage(void);
+//static void example_potp_usage(void);
 
 
 #endif  /* PHYAUTHP2P_H */

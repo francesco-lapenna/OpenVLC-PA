@@ -410,9 +410,10 @@ __be16 vlc_type_trans(struct sk_buff *skb, struct net_device *dev)
 
 // informations supposed to be known by both sender and receiver:
 static int T_prev = 0; // Previous time step, initialized to 0
-static const char* PSK = "0123456789abcdef"; // Example PSK
-static const unsigned short src_addr = 0x1234; // Example source address
 static int SN = 0; // Sequence Number, initialized to 0
+static const char* PSK = "0123456789abcdef"; // Example PSK
+//static const unsigned short src_addr = 0x1234; // Example source address
+static unsigned short src_addr;
 
 static void construct_frame_header(char* buffer, int buffer_len, int payload_len)
 {
@@ -423,6 +424,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 	/*****************************************************************/
 	/*** POTP Generation *********************************************/
 	/*****************************************************************/
+	src_addr = (unsigned short)self_id;
 	int T;
     T = ((int)ktime_get_real_seconds() - T0) / X;
 	if (T != T_prev) {
