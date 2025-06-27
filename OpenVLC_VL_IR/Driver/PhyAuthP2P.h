@@ -1,6 +1,7 @@
 #ifndef PHYAUTHP2P_H
 #define PHYAUTHP2P_H
 
+#include <linux/types.h>
 #include <stdint.h>   // for uint8_t, uint32_t
 #include <stddef.h>   // for size_t
 
@@ -17,4 +18,4 @@ int generate_potp(u8 *out);
 static void example_potp_usage(void);
 
 
-#endif
+#endif  /* PHYAUTHP2P_H */
