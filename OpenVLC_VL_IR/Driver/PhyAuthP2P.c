@@ -81,7 +81,7 @@ static u32 truncate(const u8 *hmac_result, size_t hmac_len)
 }
 
 // POTP generation function
-static int generate_potp(u8 *out)
+int generate_potp(u8 *out)
 {
     u8 hmac_result[32]; // SHA-256 output size
     u8 data[4 + 4 + 2]; // T (4 bytes), SN (4 bytes), src_addr (2 bytes)

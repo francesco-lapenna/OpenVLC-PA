@@ -9,7 +9,7 @@ static int hmac_sha256(const u8 *key, unsigned int keylen,
 
 static u32 truncate(const u8 *hmac_result, size_t hmac_len);
 
-static int generate_potp(u8 *out);
+int generate_potp(u8 *out);
 
 static void example_potp_usage(void);
 
