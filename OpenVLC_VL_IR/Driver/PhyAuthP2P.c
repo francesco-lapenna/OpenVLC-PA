@@ -94,7 +94,8 @@ int generate_potp(u8 *out, char* PSK, unsigned short src_addr, int SN, int T)
         return ret;
 
     // Truncate to 4 bytes (RFC 4226 dynamic truncation)
-    u32 otp = truncate(hmac_result, sizeof(hmac_result));
+    u32 otp;
+    otp = truncate(hmac_result, sizeof(hmac_result));
     memcpy(out, &otp, POTP_LEN);
 
     return 0;

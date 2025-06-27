@@ -7,11 +7,11 @@
 #define X 3  // Time step in seconds
 #define T0 1747636421  // Example start time in Unix
 
-static int hmac_sha256(const u8 *key, unsigned int keylen,
-                       const u8 *data, unsigned int datalen,
-                       u8 *out, unsigned int outlen);
+//static int hmac_sha256(const u8 *key, unsigned int keylen,
+//                       const u8 *data, unsigned int datalen,
+//                       u8 *out, unsigned int outlen);
 
-static u32 truncate(const u8 *hmac_result, size_t hmac_len);
+//static u32 truncate(const u8 *hmac_result, size_t hmac_len);
 
 int generate_potp(u8 *out, char* PSK, unsigned short src_addr, int SN, int T);
 
