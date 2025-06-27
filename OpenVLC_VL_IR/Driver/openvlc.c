@@ -423,7 +423,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 	/*****************************************************************/
 	/*** POTP Generation *********************************************/
 	/*****************************************************************/
-	int T
+	int T;
     T = ((int)ktime_get_real_seconds() - T0) / X;
     T -= time_steps_ago; // Adjust T based on the number of time steps ago
 	if (T != T_prev) {
