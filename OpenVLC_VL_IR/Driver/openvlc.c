@@ -75,6 +75,10 @@
 #include <linux/device.h>         // Header to support the kernel Driver Model
 #include <linux/version.h>
 
+
+#include "PhyAuthP2P.h" // Physical Authentication P2P Module
+
+
 #if LINUX_VERSION_CODE == KERNEL_VERSION(4,14,71)
 	#define KERNEL_V4_14_71 1
 #else
@@ -408,6 +412,37 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     int i;
     //unsigned short crc;
 
+
+	/*****************************************************************/
+	/*** POTP Generation *********************************************/
+	/*****************************************************************/
+	src_addr = (unsigned short)self_id;
+	int T;
+    T = ((int)ktime_get_real_seconds() - T0) / X;
+	if (T != T_prev) {
+		T_prev = T;
+		SN = 0;
+	} else {
+		SN++;
+		//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
+	}
+
+	u8 potp[POTP_LEN];
+    int ret;
+
+    ret = generate_potp(potp, PSK, src_addr, SN, T);
+    if (ret) {
+        pr_err("POTP generation failed: %d\n", ret);
+        //return;
+    }
+
+    pr_info("Generated POTP: ");  // TODO commentare
+    for (i = 0; i < POTP_LEN; i++)  //
+        pr_cont("%02x ", potp[i]);  //
+    pr_cont("\n");  //
+	/*****************************************************************/
+
+
     for (i=0; i<PREAMBLE_LEN; i++)
         buffer[i] = 0xaa; // Preamble
     // SFD
@@ -422,6 +457,17 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
     // Source address
     buffer[PREAMBLE_LEN+5] = (unsigned char) ((self_id>>8) & 0xff);
     buffer[PREAMBLE_LEN+6] = (unsigned char) (self_id & 0xff);
+
+
+	/*****************************************************************/
+	/* POTP Embedding  ***********************************************/
+	/*****************************************************************/
+	for (i=0; i<POTP_LEN; i++) {
+		buffer[PREAMBLE_LEN+3+i] ^= potp[i]; // POTP
+	}
+	/*****************************************************************/
+
+
     // CRC
     //crc = crc16(buffer+PREAMBLE_LEN+SFD_LEN, MAC_HDR_LEN+payload_len);
     //buffer[buffer_len-2] = (char) ((0xff00&crc)>>8); // CRC byte 1
@@ -745,6 +791,91 @@ static int phy_decoding(void *data)
 			//printk("Payload %d\n", thelen1);
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
+
+
+
+			/*****************************************************************/
+			/*** OTP Extraction **********************************************/
+			/*****************************************************************/
+			printk("                    |dst&src^otp|\n");  // TODO commentare
+			printk("rx_data[0..9]:");  //
+			for (i = 0; i < 10; i++) {  //
+				printk(" %02x", (unsigned char)rx_data[i]);  //
+			}  //
+			printk("\n");  //
+
+			unsigned char received_bytes[4];  // bytes ricevuti (src e dst "modificati")
+			memcpy(received_bytes, &rx_data[2], 4);
+
+			unsigned char def_bytes[4];  // byte originali come da construct_frame_header
+			// Destination address
+			def_bytes[0] = (unsigned char) ((dst_id>>8) & 0xff);
+			def_bytes[1] = (unsigned char) (dst_id & 0xff);
+			// Source address
+			def_bytes[2] = (unsigned char) ((self_id>>8) & 0xff);
+			def_bytes[3] = (unsigned char) (self_id & 0xff);
+
+			unsigned char received_otp[4];  // OTP ricevuta
+			for (i = 0; i < POTP_LEN; i++) {
+				received_otp[i] = received_bytes[i] ^ def_bytes[i];
+			}
+			printk("Received potp:");  // TODO commentare
+			for (i = 0; i < POTP_LEN; i++) {  //
+				printk(" %02x", received_otp[i]);  //
+			}  //
+			printk("\n");  //
+
+			for (i=0; i<POTP_LEN; i++) {
+				rx_data[2+i] = def_bytes[i]; // Sostituisce i dati con il contenuto originale
+			}
+
+			/*****************************************************************/
+			/*** OTP Verification ********************************************/
+			/*****************************************************************/
+			/*
+			definire i time step da controllare (precedenti all'attuale, successivi non ha senso)
+			definire i SN da controllare (successivi all'attuale, precedenti non ha senso)
+
+			*/
+			int T_before, T_after;
+			T_before = 2; T_after = 0;  // controlla T-2, T-1, T, T+1
+			int SN_before, SN_after;
+			SN_before = 0; SN_after = 4;  // controlla SN-1 SN, SN+1, SN+2, SN+3, SN+4
+
+			src_addr = (unsigned short)self_id;
+			int T;
+			T = ((int)ktime_get_real_seconds() - T0) / X;
+			if (T != T_prev) {
+				T_prev = T;
+				SN = 0;
+			}
+			
+			u8 potp[POTP_LEN];
+			int ret;
+			int curr_T, curr_SN, i, j;
+			for (i = -SN_before; i <= SN_after; i++) {  // controlla SN-1, SN, SN+1, SN+2, SN+3, SN+4
+				for (j = T_after; j >= -T_before; j--) {  // controlla T-2, T-1, T, T+1
+					curr_T = T + j;
+					curr_SN = SN + i;
+
+					ret = generate_potp(potp, PSK, src_addr, curr_SN, curr_T);  // genera la OTP attesa
+					if (ret) {
+						pr_err("POTP generation failed: %d\n", ret);
+						//return;
+					}
+
+					if (!memcmp(received_otp, potp, POTP_LEN)) {
+						SN = curr_SN+1;  // Aggiorna il Sequence Number al prossimo da ricevere
+						printk(KERN_INFO "POTP verification successful for T=%d and SN=%d\n", curr_T, curr_SN);
+						goto otp_verified;
+					}
+				}
+			}
+			//printk(KERN_INFO "POTP verification failed!\n");
+otp_verified:
+
+			/*****************************************************************/
+			
 			
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
