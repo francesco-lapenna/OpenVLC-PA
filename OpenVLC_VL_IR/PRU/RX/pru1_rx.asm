@@ -48,15 +48,27 @@ RESTART:
 	clr r30, r30.t12
 
 ;;;;;;;;; GET PREAMBLE ;;;;;;;;;
-GET_PREAMBLE: 
-	
-	JAL r11.w0, GET_SAMPLE
-	LSL r25, r25, 1
-	QBBC PREAMBLE_ZERO, r8, 0
-	SET r25, r25.t0
-PREAMBLE_ZERO:	
-	QBEQ PREAMBLE_DETECTED, r25, r15
-	JMP GET_PREAMBLE
+GET_PREAMBLE:
+    ; ==== entrare in modalità “nuovo bit” ====
+    SET   r28, r28.t0           ; r28.b0 ← 1 (flag: ho chiesto un nuovo campione)
+
+    ; ==== leggere un nuovo campione di un bit ====
+    JAL   r11.w0, GET_SAMPLE    ; GET_SAMPLE → restituisce bit in r11.b0
+
+    ; ==== se non ho ancora processato il bit, processalo ora ====
+    QBBC  NO_NEW_PB, r28, 0     ; se r28.b0==0 → salta la parte di aggiornamento (rarissimo)
+
+    MOV   r10, r11.b0           ; r10 ← bit letto
+    LSL   r25, r25, #1          ; shift‐left di r25
+    ADD   r25, r25, r10         ; inserisci il nuovo bit in b0
+    CLR   r28, r28.t0           ; r28.b0 ← 0 (ho già processato questo bit)
+    AND   r25, r25, r6          ; tronca r25 ai soli N bit di interesse
+
+NO_NEW_PB:
+    ; ==== confronto con il pattern di preambolo ====
+    QBEQ  PREAMBLE_DETECTED, r25, r15  ; se r25 == r15 → ho trovato il preambolo
+    JMP   GET_PREAMBLE                ; altrimenti ripeti il processo
+
 PREAMBLE_DETECTED:
 ;;;;;;;;; GET SFD ;;;;;;;;;
 	set r30, r30.t10
