@@ -885,7 +885,7 @@ static int phy_decoding(void *data)
 				}
 			}
 otp_verified:
-			if (!ok) printk(KERN_INFO "POTP verification failed!\n");
+			//if (!ok) printk(KERN_INFO "POTP verification failed!\n");
 
 			/*****************************************************************/
 			
