@@ -22,7 +22,7 @@ VERSION:=$(shell sed 's/VERSION = \(.*\)/\1/;t;d' $(KSRC)/Makefile)
 
 
 obj-m        := vlc.o
-vlc-objs :=  reed_solomon.o openvlc.o PhyAuthP2P.o
+vlc-objs :=  reed_solomon.o openvlc.o 
 EXTRA_CFLAGS := -g -DCONFIG_REED_SOLOMON_ENC8 -DCONFIG_REED_SOLOMON_DEC8 -DCONFIG_REED_SOLOMON_ENC16 -DCONFIG_REED_SOLOMON_DEC16 $(ADD_CFLAGS)
 
 all::
