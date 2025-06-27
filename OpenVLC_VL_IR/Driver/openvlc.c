@@ -430,7 +430,6 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 		SN = 0;
 	} else {
 		SN++;
-		// TODO introdurre massimo sequence number??? non obbligatorio
 		//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
 	}
 
