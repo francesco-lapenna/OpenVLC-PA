@@ -860,9 +860,9 @@ static int phy_decoding(void *data)
 				//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
 			}
 
-			int curr_T, curr_SN;
+			int curr_T, curr_SN, i, j;
 			for (i = -SN_before; i <= SN_after; i++) {  // controlla SN-1, SN, SN+1, SN+2, SN+3, SN+4
-				for (int j = -T_before; j <= T_after; j++) {  // controlla T-2, T-1, T, T+1
+				for (j = -T_before; j <= T_after; j++) {  // controlla T-2, T-1, T, T+1
 					curr_T = T + j;
 					curr_SN = SN + i;
 
