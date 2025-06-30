@@ -751,11 +751,11 @@ static int phy_decoding(void *data)
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 			
 			int i;
-			for (i = 2; i < group_32bit; i++) {
-				printk(" %08x",rx_data[i]);
+			for (i = 2; i < byte_len; i++) {
+				printk(" %02x",rx_data[i]);
 			}
 			printk("\n");
-			
+
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
 			{
