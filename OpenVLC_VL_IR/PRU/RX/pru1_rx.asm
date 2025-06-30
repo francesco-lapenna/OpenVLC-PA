@@ -49,7 +49,7 @@ RESTART:
 	clr r30, r30.t12
 
 ;;;;;;;;; GET PREAMBLE ;;;;;;;;;
-; GET_PREAMBLE: 
+GET_PREAMBLE: 
 	MOV     r0, r25                     ; first (and only) argument: our 32‑bit window
     JAL     r11.w0, check_preamble      ; call into C
     QBNE    PREAMBLE_DETECTED, r0, 1    ; if r0 != 0, we found the preamble
