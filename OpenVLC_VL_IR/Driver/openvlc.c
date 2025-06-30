@@ -520,6 +520,11 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
     vlc_release_buffer(pkt); // Return the buffer to the pool
     construct_frame_header(data_buffer_byte, data_buffer_byte_len, data_buffer_symbol_len);//construct_frame_header(data_buffer_byte, data_buffer_byte_len, payload_len);
     
+	int i;
+	for (i=0; i<data_buffer_byte_len; i++) {
+		printk(" %02x", data_buffer_byte[i]);	
+	}
+
     /// Encode the blocks of a frame
     for (index_block = 0; index_block < num_of_blocks; index_block++) {
         for (i = 0; i < ECC_LEN; i++)
@@ -746,6 +751,11 @@ static int phy_decoding(void *data)
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 			
+			int i;
+			for (i=0; i<data_buffer_byte_len; i++) {
+				printk(" %02x", data_buffer_byte[i]);	
+			}
+
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
 			{
