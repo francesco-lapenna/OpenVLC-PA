@@ -520,8 +520,8 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
     vlc_release_buffer(pkt); // Return the buffer to the pool
     construct_frame_header(data_buffer_byte, data_buffer_byte_len, data_buffer_symbol_len);//construct_frame_header(data_buffer_byte, data_buffer_byte_len, payload_len);
 	
-	for (i=PREAMBLE_LEN+6; i<data_buffer_byte_len; i++) {
-		data_buffer_byte[i] = 0xaa;
+	for (i=PREAMBLE_LEN+7; i<payload_len; i++) {
+		data_buffer_byte[i] = 0xaaaaaa;
 	}
     
     /// Encode the blocks of a frame
