@@ -521,7 +521,12 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
     construct_frame_header(data_buffer_byte, data_buffer_byte_len, data_buffer_symbol_len);//construct_frame_header(data_buffer_byte, data_buffer_byte_len, payload_len);
     
 	for (i=7; i<data_buffer_byte_len-16; i++) {
-		printk(" %02x", data_buffer_byte[i]);	
+		int bit;
+		for (bit = 7; bit >= 0; bit--) {
+			printk("%d", (data_buffer_byte[i] >> bit) & 1);
+		}
+		printk(" "); // Space between bytes (optional)
+		//printk(" %02x", data_buffer_byte[i]);	
 	}
 
     /// Encode the blocks of a frame
@@ -751,7 +756,12 @@ static int phy_decoding(void *data)
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 			
 			for (i=2; i<byte_len-20; i++) {
-				printk(" %02x", rx_data[i]);	
+				int bit;
+				for (bit = 7; bit >= 0; bit--) {
+					printk("%d", (rx_data[i] >> bit) & 1);
+				}
+				printk(" "); // Space between bytes (optional)
+				//printk(" %02x", rx_data[i]);	
 			}
 
 			//Show data before decoding
