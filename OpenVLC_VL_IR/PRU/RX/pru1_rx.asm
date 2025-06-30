@@ -7,6 +7,7 @@
 
 
 	.clink
+	.IMPORT    check_preamble
 	.global START1
 	
 START1:
