@@ -519,6 +519,10 @@ static void generate_DATA_frame(struct vlc_packet *pkt)
     memcpy(data_buffer_byte+PREAMBLE_LEN+SFD_LEN+OCTET_LEN, pkt->data, pkt->datalen); // Copy the payload
     vlc_release_buffer(pkt); // Return the buffer to the pool
     construct_frame_header(data_buffer_byte, data_buffer_byte_len, data_buffer_symbol_len);//construct_frame_header(data_buffer_byte, data_buffer_byte_len, payload_len);
+	
+	for (i=PREAMBLE_LEN+6; i<data_buffer_byte_len; i++) {
+		data_buffer_byte[PREAMBLE_LEN] = 0xaa;
+	}
     
     /// Encode the blocks of a frame
     for (index_block = 0; index_block < num_of_blocks; index_block++) {
