@@ -46,6 +46,11 @@ extern void START1(void);
 // Return 1 if preamble matches, 0 otherwise.
 uint32_t check_preamble(uint32_t window) {
     const uint32_t PRE = 0xAAAAAAAA;  // same as your r15
+    if(window == PRE) {
+        printk("Preamble matched: 0x%08X\n", window);
+    } else {
+        printk("Preamble mismatch: 0x%08X\n", window);
+    }
     return (window == PRE);
 }
 

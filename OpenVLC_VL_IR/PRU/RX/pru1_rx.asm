@@ -49,6 +49,17 @@ RESTART:
 	clr r30, r30.t12
 
 ;;;;;;;;; GET PREAMBLE ;;;;;;;;;
+    LDI32   r25, 0x00000000    ; clear the window
+    LDI32   r17, 32            ; loop counter
+
+FILL_WINDOW:
+    JAL     r11.w0, GET_SAMPLE  ; r10 ← next decoded bit
+    LSL     r25, r25, 1
+    ADD     r25, r25, r10       ; shift in the new bit
+    AND     r25, r25, r6        ; mask to 32 bits (optional)
+    SUB     r17, r17, 1
+    QBNE    FILL_WINDOW, r17, 0
+	
 GET_PREAMBLE: 
 	MOV     r0, r25                     ; first (and only) argument: our 32‑bit window
     JAL     r11.w0, check_preamble      ; call into C
