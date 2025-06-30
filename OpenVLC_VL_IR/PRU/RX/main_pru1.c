@@ -43,14 +43,17 @@
 // seperately linked
 extern void START1(void);
 
-// Return 1 if preamble matches, 0 otherwise.
+// PRU OCM/Shared RAM base on AM335x
+#define PRU_SHARED_RAM  ((volatile uint32_t *)0x4A310000)
+
 uint32_t check_preamble(uint32_t window) {
-    const uint32_t PRE = 0xAAAAAAAA;  // same as your r15
-    if(window == PRE) {
-        printk("Preamble matched: 0x%08X\n", window);
-    } else {
-        printk("Preamble mismatch: 0x%08X\n", window);
-    }
+    const uint32_t PRE = 0xAAAAAAAA;
+
+    // Dump the window value for debug
+    PRU_SHARED_RAM[0] = window;        // at offset 0x00
+    PRU_SHARED_RAM[1] = (window == PRE);
+
+    // Return 1 on match, 0 otherwise
     return (window == PRE);
 }
 
