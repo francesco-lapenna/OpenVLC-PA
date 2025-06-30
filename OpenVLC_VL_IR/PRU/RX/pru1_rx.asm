@@ -8,6 +8,7 @@
 
 	.clink
 	.global START1
+	.extern check_preamble
 	
 START1:
 
@@ -49,6 +50,16 @@ RESTART:
 
 ;;;;;;;;; GET PREAMBLE ;;;;;;;;;
 ; GET_PREAMBLE: 
+	MOV     r0, r25                     ; first (and only) argument: our 32‑bit window
+    JAL     r11.w0, check_preamble      ; call into C
+    QBNE    PREAMBLE_DETECTED, r0, 1    ; if r0 != 0, we found the preamble
+
+    ; — otherwise, shift window left 1 bit, read next bit, retry —
+    JAL     r11.w0, GET_SAMPLE          ; fetch next bit into r10
+    LSL     r25, r25, 1                 ; slide window
+    ADD     r25, r25, r10               ; insert new bit
+    AND     r25, r25, r6                ; mask down to 32 bits
+    JMP     GET_PREAMBLE
 	
 	; JAL r11.w0, GET_SAMPLE
 	; LSL r25, r25, 1
