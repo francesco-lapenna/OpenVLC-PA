@@ -8,7 +8,6 @@
 
 	.clink
 	.global START1
-	.extern check_preamble
 	
 START1:
 
@@ -60,7 +59,7 @@ RESTART:
     ADD     r25, r25, r10               ; insert new bit
     AND     r25, r25, r6                ; mask down to 32 bits
     JMP     GET_PREAMBLE
-	
+
 	; JAL r11.w0, GET_SAMPLE
 	; LSL r25, r25, 1
 	; QBBC PREAMBLE_ZERO, r8, 0
