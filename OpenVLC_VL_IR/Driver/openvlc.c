@@ -755,7 +755,7 @@ static int phy_decoding(void *data)
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 			
-			printk("\nReceived: ")
+			printk("\nReceived: ");
 			for (i=2; i<byte_len-20; i++) {
 				int bit;
 				for (bit = 7; bit >= 0; bit--) {
