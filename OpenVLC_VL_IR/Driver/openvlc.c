@@ -694,6 +694,62 @@ end:
 	return;
 }
 
+
+#include <linux/fs.h>        // filp_open, filp_close
+#include <linux/uaccess.h>   // for kernel_write
+#include <linux/slab.h>      // kzalloc, kfree
+
+/*-------------------------------------------------------------------
+ * log_rx_bits()
+ *   Build an ASCII string of all bits in rx_data[2 .. byte_len-20]
+ *   and append it (with a newline) into /tmp/rx_bits.log
+ *------------------------------------------------------------------*/
+static void log_rx_bits(const u8 *rx_data, size_t byte_len)
+{
+    struct file   *filp;
+    loff_t         fpos = 0;
+    char          *buf;
+    int            i, bit;
+    ssize_t        written;
+    int            buflen = ((byte_len - 22) * 9) + 16;
+
+    buf = kzalloc(buflen, GFP_KERNEL);
+    if (!buf)
+        return;
+
+    /* Build the bit‐string */
+    {
+        int p = 0;
+        p += snprintf(buf + p, buflen - p, "\nReceived: ");
+        for (i = 2; i < byte_len - 20 && (p + 10) < buflen; i++) {
+            for (bit = 7; bit >= 0; bit--) {
+                buf[p++] = ((rx_data[i] >> bit) & 1) ? '1' : '0';
+            }
+            buf[p++] = ' ';
+        }
+        buf[p++] = '\n';
+    }
+
+    /* Open (or create) and append */
+    filp = filp_open("/tmp/rx_bits.log",
+                     O_WRONLY | O_CREAT | O_APPEND,
+                     0644);
+    if (IS_ERR(filp)) {
+        pr_err("phy_decoding: failed to open log file: %ld\n",
+               PTR_ERR(filp));
+        goto out_free;
+    }
+
+    written = kernel_write(filp, buf, strlen(buf), &filp->f_pos);
+    if (written < 0)
+        pr_err("phy_decoding: failed to write log: %zd\n", written);
+
+    filp_close(filp, NULL);
+
+out_free:
+    kfree(buf);
+}
+
 static int phy_decoding(void *data)
 {
 	
@@ -746,15 +802,8 @@ static int phy_decoding(void *data)
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 
-			printk("\nReceived: ");
-			for (i=2; i<byte_len-20; i++) {
-				int bit;
-				for (bit = 7; bit >= 0; bit--) {
-					printk("%d", (rx_data[i] >> bit) & 1);
-				}
-				printk(" "); // Space between bytes (optional)
-				//printk(" %02x", rx_data[i]);	
-			}
+			/* --- replace printk loop with file write --- */
+            log_rx_bits((u8 *)rx_data, byte_len);
 			
 			//Show data before decoding
 			/*for(i = 2;i<group_32bit*sizeof(unsigned int);i++)
