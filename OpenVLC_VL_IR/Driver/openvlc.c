@@ -755,14 +755,14 @@ static int phy_decoding(void *data)
 			
 			memcpy(&rx_data[2],&rx_pru[2],group_32bit*sizeof(unsigned int)); // 
 			
-			printk("Received: ");
-			for (i=2; i<byte_len; i++) {
-				/*int bit;
+			printk("\nReceived: ");
+			for (i=2; i<byte_len-20; i++) {
+				int bit;
 				for (bit = 7; bit >= 0; bit--) {
 					printk("%d", (rx_data[i] >> bit) & 1);
 				}
-				printk(" "); // Space between bytes (optional)*/
-				printk("%02x ", rx_data[i]);	
+				printk(" "); // Space between bytes (optional)
+				//printk(" %02x", rx_data[i]);	
 			}
 
 			//Show data before decoding
