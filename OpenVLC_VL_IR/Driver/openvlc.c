@@ -757,12 +757,12 @@ static int phy_decoding(void *data)
 			
 			printk("\nReceived: ");
 			for (i=2; i<byte_len-20; i++) {
-				int bit;
+				/*int bit;
 				for (bit = 7; bit >= 0; bit--) {
 					printk("%d", (rx_data[i] >> bit) & 1);
 				}
-				printk(" "); // Space between bytes (optional)
-				//printk(" %02x", rx_data[i]);	
+				printk(" "); // Space between bytes (optional)*/
+				printk("%02x ", rx_data[i]);	
 			}
 
 			//Show data before decoding
