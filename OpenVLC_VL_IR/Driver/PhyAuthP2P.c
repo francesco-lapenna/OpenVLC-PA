@@ -1,7 +1,7 @@
 #include "PhyAuthP2P.h"
 
 /*******************/
-/* POTP Generation */
+/* OTP Generation */
 /*******************/
 
 #include <crypto/hash.h>
@@ -72,8 +72,8 @@ static u32 truncate(const u8 *hmac_result, size_t hmac_len)
     return bin_code;
 }
 
-// POTP generation function
-int generate_potp(u8 *out, char* PSK, unsigned short src_addr, int SN, int T)
+// OTP generation function
+int generate_otp(u8 *out, char* PSK, unsigned short src_addr, int SN, int T)
 {
     u8 hmac_result[32]; // SHA-256 output size
     u8 data[4 + 4 + 2]; // T (4 bytes), SN (4 bytes), src_addr (2 bytes)
@@ -96,7 +96,7 @@ int generate_potp(u8 *out, char* PSK, unsigned short src_addr, int SN, int T)
     // Truncate to 4 bytes (RFC 4226 dynamic truncation)
     u32 otp;
     otp = truncate(hmac_result, sizeof(hmac_result));
-    memcpy(out, &otp, POTP_LEN);
+    memcpy(out, &otp, OTP_LEN);
 
     return 0;
 }
@@ -108,7 +108,7 @@ static const char* PSK = "0123456789abcdef"; // Example PSK
 static const unsigned short src_addr = 0x1234; // Example source address
 static int SN = 0; // Sequence Number, initialized to 0
 
-static void example_potp_usage(void)
+static void example_otp_usage(void)
 {
     int T
     T = ((int)ktime_get_real_seconds() - T0) / X;
@@ -118,21 +118,21 @@ static void example_potp_usage(void)
 	} else {
 		SN++;
 		// TODO introdurre massimo sequence number??? non obbligatorio
-		//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
+		//printk(KERN_INFO "OTP: Sequence Number incremented to %d\n", SN);
 	}
 
-    u8 potp[POTP_LEN];
+    u8 otp[OTP_LEN];
     int ret, i;
 
-    ret = generate_potp(potp, PSK, src_addr, SN, T)
+    ret = generate_otp(otp, PSK, src_addr, SN, T)
     if (ret) {
-        pr_err("POTP generation failed: %d\n", ret);
+        pr_err("OTP generation failed: %d\n", ret);
         return;
     }
 
-    pr_info("Generated POTP: ");
-    for (i = 0; i < POTP_LEN; i++)
-        pr_cont("%02x ", potp[i]);
+    pr_info("Generated OTP: ");
+    for (i = 0; i < OTP_LEN; i++)
+        pr_cont("%02x ", otp[i]);
     pr_cont("\n");
 }*/
 

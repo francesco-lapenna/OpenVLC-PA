@@ -422,7 +422,7 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 
 
 	/*****************************************************************/
-	/*** POTP Generation *********************************************/
+	/*** OTP Generation *********************************************/
 	/*****************************************************************/
 	src_addr = (unsigned short)self_id;
 	int T;
@@ -432,21 +432,21 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 		SN = 0;
 	} else {
 		SN++;
-		//printk(KERN_INFO "POTP: Sequence Number incremented to %d\n", SN);
+		//printk(KERN_INFO "OTP: Sequence Number incremented to %d\n", SN);
 	}
 
-	u8 potp[POTP_LEN];
+	u8 otp[OTP_LEN];
     int ret;
 
-    ret = generate_potp(potp, PSK, src_addr, SN, T);
+    ret = generate_otp(otp, PSK, src_addr, SN, T);
     if (ret) {
-        pr_err("POTP generation failed: %d\n", ret);
+        pr_err("OTP generation failed: %d\n", ret);
         //return;
     }
 
-    pr_info("Generated POTP: ");  // TODO commentare
-    for (i = 0; i < POTP_LEN; i++)  //
-        pr_cont("%02x ", potp[i]);  //
+    pr_info("Generated OTP: ");  // TODO commentare
+    for (i = 0; i < OTP_LEN; i++)  //
+        pr_cont("%02x ", otp[i]);  //
     pr_cont("\n");  //
 	/*****************************************************************/
 
@@ -468,10 +468,10 @@ static void construct_frame_header(char* buffer, int buffer_len, int payload_len
 
 
 	/*****************************************************************/
-	/* POTP Embedding  ***********************************************/
+	/* OTP Embedding  ***********************************************/
 	/*****************************************************************/
-	for (i=0; i<POTP_LEN; i++) {
-		buffer[PREAMBLE_LEN+3+i] ^= potp[i]; // POTP
+	for (i=0; i<OTP_LEN; i++) {
+		buffer[PREAMBLE_LEN+3+i] ^= otp[i]; // OTP
 	}
 	/*****************************************************************/
 
@@ -824,16 +824,16 @@ static int phy_decoding(void *data)
 			def_bytes[3] = (unsigned char) (self_id & 0xff);
 
 			unsigned char received_otp[4];  // OTP ricevuta
-			for (i = 0; i < POTP_LEN; i++) {
+			for (i = 0; i < OTP_LEN; i++) {
 				received_otp[i] = received_bytes[i] ^ def_bytes[i];
 			}
-			printk("Received potp:");  // TODO commentare
-			for (i = 0; i < POTP_LEN; i++) {  //
+			printk("Received otp:");  // TODO commentare
+			for (i = 0; i < OTP_LEN; i++) {  //
 				printk(" %02x", received_otp[i]);  //
 			}  //
 			printk("\n");  //
 
-			for (i=0; i<POTP_LEN; i++) {
+			for (i=0; i<OTP_LEN; i++) {
 				rx_data[2+i] = def_bytes[i]; // Sostituisce i dati con il contenuto originale
 			}
 
@@ -858,7 +858,7 @@ static int phy_decoding(void *data)
 				SN = 0;
 			}
 			
-			u8 potp[POTP_LEN];
+			u8 otp[OTP_LEN];
 			int ret;
 			int curr_T, curr_SN, i, j;
 			for (i = -SN_before; i <= SN_after; i++) {  // controlla SN, SN+1, SN+2, SN+3, SN+4
@@ -866,21 +866,21 @@ static int phy_decoding(void *data)
 					curr_T = T + j;
 					curr_SN = SN + i;
 
-					ret = generate_potp(potp, PSK, src_addr, curr_SN, curr_T);  // genera la OTP attesa
+					ret = generate_otp(otp, PSK, src_addr, curr_SN, curr_T);  // genera la OTP attesa
 					if (ret) {
-						pr_err("POTP generation failed: %d\n", ret);
+						pr_err("OTP generation failed: %d\n", ret);
 						//return;
 					}
 
-					if (!memcmp(received_otp, potp, POTP_LEN)) {
+					if (!memcmp(received_otp, otp, OTP_LEN)) {
 						SN = curr_SN+1;  // Aggiorna il Sequence Number al prossimo da ricevere
-						printk(KERN_INFO "POTP verification successful for T=%d and SN=%d\n", curr_T, curr_SN);
+						printk(KERN_INFO "OTP verification successful for T=%d and SN=%d\n", curr_T, curr_SN);
 						goto otp_verified;
 					}
 				}
 			}
 			// if no valid OTP is found, drop the packet
-			//printk(KERN_INFO "POTP verification failed! Dropping packet.\n");
+			//printk(KERN_INFO "OTP verification failed! Dropping packet.\n");
 			//rx_pru[0] = 0;
 			//rx_pru[1] = 0;
 			//goto error;

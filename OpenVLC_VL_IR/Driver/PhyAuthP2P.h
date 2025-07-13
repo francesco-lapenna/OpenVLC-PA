@@ -3,7 +3,7 @@
 
 #include <linux/types.h>
 
-#define POTP_LEN 4  // 4 bytes output
+#define OTP_LEN 4  // 4 bytes output
 #define X 3  // Time step in seconds
 #define T0 1747636421  // Example start time in Unix
 
@@ -13,9 +13,9 @@
 
 //static u32 truncate(const u8 *hmac_result, size_t hmac_len);
 
-int generate_potp(u8 *out, char* PSK, unsigned short src_addr, int SN, int T);
+int generate_otp(u8 *out, char* PSK, unsigned short src_addr, int SN, int T);
 
-//static void example_potp_usage(void);
+//static void example_otp_usage(void);
 
 
 #endif  /* PHYAUTHP2P_H */
