@@ -879,7 +879,11 @@ static int phy_decoding(void *data)
 					}
 				}
 			}
-			//printk(KERN_INFO "POTP verification failed!\n");
+			// if no valid OTP is found, drop the packet
+			//printk(KERN_INFO "POTP verification failed! Dropping packet.\n");
+			//rx_pru[0] = 0;
+			//rx_pru[1] = 0;
+			//goto error;
 otp_verified:
 
 			/*****************************************************************/
