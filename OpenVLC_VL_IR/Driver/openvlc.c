@@ -846,9 +846,9 @@ static int phy_decoding(void *data)
 
 			*/
 			int T_before, T_after;
-			T_before = 2; T_after = 0;  // controlla T-2, T-1, T, T+1
+			T_before = 2; T_after = 0;  // controlla T-2, T-1, T
 			int SN_before, SN_after;
-			SN_before = 0; SN_after = 4;  // controlla SN-1 SN, SN+1, SN+2, SN+3, SN+4
+			SN_before = 0; SN_after = 4;  // controlla SN, SN+1, SN+2, SN+3, SN+4
 
 			src_addr = (unsigned short)self_id;
 			int T;
@@ -861,8 +861,8 @@ static int phy_decoding(void *data)
 			u8 potp[POTP_LEN];
 			int ret;
 			int curr_T, curr_SN, i, j;
-			for (i = -SN_before; i <= SN_after; i++) {  // controlla SN-1, SN, SN+1, SN+2, SN+3, SN+4
-				for (j = T_after; j >= -T_before; j--) {  // controlla T-2, T-1, T, T+1
+			for (i = -SN_before; i <= SN_after; i++) {  // controlla SN, SN+1, SN+2, SN+3, SN+4
+				for (j = T_after; j >= -T_before; j--) {  // controlla T-2, T-1, T
 					curr_T = T + j;
 					curr_SN = SN + i;
 
